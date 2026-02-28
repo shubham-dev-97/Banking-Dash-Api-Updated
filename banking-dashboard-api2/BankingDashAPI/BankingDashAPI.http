@@ -1,0 +1,6 @@
+@BankingDashAPI_HostAddress = http://localhost:5142
+
+GET {{BankingDashAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
