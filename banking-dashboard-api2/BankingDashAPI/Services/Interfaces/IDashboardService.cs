@@ -25,4 +25,8 @@ public interface IDashboardService
     List<DateTime> GetAvailableDates();
 
     DepositOpeningSummary GetDepositOpeningSummary(DateTime asOnDate);
+
+    NPASummary GetNPASummary(DateTime asOnDate);
+
+    List<HCDistribution> GetHCDistribution(DateTime asOnDate);
 }   

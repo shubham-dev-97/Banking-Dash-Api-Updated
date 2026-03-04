@@ -309,4 +309,97 @@ public class DashboardService : IDashboardService
             return new DepositOpeningSummary();
         }
     }
+
+
+    // To Get the NPA Summary
+    public NPASummary GetNPASummary(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Getting NPA summary for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+
+            var result = new NPASummary();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("sp_NPASummary", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
+
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            result.TotalNPAOpenLast30Days = reader.GetInt32(0);
+                            result.TotalNPAAccountInBank = reader.GetInt32(1);
+                            result.TotalNPAAmount = reader.GetDecimal(2);
+                            result.OpeningPercentage = reader.GetDecimal(3);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting NPA summary");
+            return new NPASummary();
+        }
+    }
+
+
+
+    // To Get the HC Distribution
+    public List<HCDistribution> GetHCDistribution(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Getting HC distribution for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+
+            var result = new List<HCDistribution>();
+
+            var query = @"
+            SELECT COUNT(*) as count, HC 
+            FROM BANK_LOAN_DATA_DUMP  
+            WHERE P_AS_ON_DATE = @AsOnDate
+            AND DON IS NOT NULL 
+            AND ACCOUNT_STATUS='O'
+            GROUP BY HC
+            ORDER BY count DESC";
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
+
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            result.Add(new HCDistribution
+                            {
+                                Count = reader.GetInt32(0),
+                                HC = reader.GetString(1)
+                            });
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Retrieved {Count} HC categories", result.Count);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting HC distribution");
+            return new List<HCDistribution>();
+        }
+    }
 }

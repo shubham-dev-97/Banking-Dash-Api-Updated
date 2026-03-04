@@ -139,4 +139,38 @@ public class DashboardController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
+    // NPA Summary
+    [HttpGet("npa-summary")]
+    public IActionResult GetNPASummary([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var summary = _service.GetNPASummary(asOnDate);
+            return Ok(summary);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetNPASummary");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    //HC Distribution
+    [HttpGet("hc-distribution")]
+    public IActionResult GetHCDistribution([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = _service.GetHCDistribution(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetHCDistribution");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+
 }

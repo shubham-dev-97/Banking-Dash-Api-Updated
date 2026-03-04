@@ -22,6 +22,10 @@ public class AppDbContext : DbContext
 
     public DbSet<DepositOpeningSummary> DepositOpeningSummaries { get; set; }
 
+
+    public DbSet<NPASummary> NPASummaries { get; set; }
+
+    public DbSet<HCDistribution> HCDistributions { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Configure HomeKpi
@@ -106,7 +110,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.LoanDepositRatio).HasColumnName("LoanDepositRatio");
         });
 
-        // Configure BankingSummary
+        //BankingSummary
         modelBuilder.Entity<BankingSummary>(entity =>
         {
             entity.HasNoKey();
@@ -152,6 +156,26 @@ public class AppDbContext : DbContext
             entity.Property(e => e.TotalDepositAccountInBank).HasColumnName("Total Deposit Account In Bank");
             entity.Property(e => e.TotalDepositAmount).HasColumnName("Total Deposit Amount");
             entity.Property(e => e.OpeningPercentage).HasColumnName("Opening Percentage");
+        });
+
+
+
+        // NPASummary entity
+        modelBuilder.Entity<NPASummary>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.TotalNPAOpenLast30Days).HasColumnName("Total NPA Open Last 30 Days");
+            entity.Property(e => e.TotalNPAAccountInBank).HasColumnName("Total NPA Account In Bank");
+            entity.Property(e => e.TotalNPAAmount).HasColumnName("Total NPA Amount");
+            entity.Property(e => e.OpeningPercentage).HasColumnName("Opening Percentage");
+        });
+
+        // HCDistribution
+        modelBuilder.Entity<HCDistribution>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.Count).HasColumnName("count");
+            entity.Property(e => e.HC).HasColumnName("HC");
         });
     }
 }
