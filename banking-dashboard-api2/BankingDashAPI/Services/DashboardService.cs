@@ -21,123 +21,6 @@ public class DashboardService : IDashboardService
         _logger = logger;
     }
 
-
-    // HOME KPI
-    public async Task<HomeKpi?> GetHomeKpi(HomeFilter? filter)
-    {
-        var query = _context.HomeKpi.AsQueryable();
-        return await query.AsNoTracking().FirstOrDefaultAsync();
-    }
-
-
-
-    // DEPOSIT ANALYSIS
-    public async Task<List<DepositAnalysis>> GetDepositAnalysis(DepositFilter? filter)
-    {
-        var query = _context.DepositAnalysis.AsQueryable();
-
-        if (filter != null)
-        {
-            if (!string.IsNullOrEmpty(filter.BranchCode))
-                query = query.Where(x => x.BranchCode == filter.BranchCode);  
-
-            if (!string.IsNullOrEmpty(filter.ProductCode))
-                query = query.Where(x => x.ProductCode == filter.ProductCode);  
-
-            if (!string.IsNullOrEmpty(filter.SchemeCode))
-                query = query.Where(x => x.SchemeCode == filter.SchemeCode); 
-
-            if (!string.IsNullOrEmpty(filter.CustomerCategory))
-                query = query.Where(x => x.CustomerCategory == filter.CustomerCategory);  
-
-            if (!string.IsNullOrEmpty(filter.AccountStatus))
-                query = query.Where(x => x.AccountStatus == filter.AccountStatus);  
-
-            if (!string.IsNullOrEmpty(filter.Gender))
-                query = query.Where(x => x.CustomerGender == filter.Gender);  
-
-            if (filter.Year.HasValue)
-                query = query.Where(x => x.OpenYear == filter.Year);
-
-            if (filter.Month.HasValue)
-                query = query.Where(x => x.OpenMonth == filter.Month);
-        }
-
-        return await query.AsNoTracking().ToListAsync();
-    }
-
-
-    // LOAN ANALYSIS
-    public async Task<List<LoanAnalysis>> GetLoanAnalysis(LoanFilter? filter)
-    {
-        var query = _context.LoanAnalysis.AsQueryable();
-
-        if (filter != null)
-        {
-            if (!string.IsNullOrEmpty(filter.BranchCode))
-                query = query.Where(x => x.BranchCode == filter.BranchCode);  
-            if (!string.IsNullOrEmpty(filter.SchemeCode))
-                query = query.Where(x => x.LoanSchemeCode == filter.SchemeCode); 
-
-            if (!string.IsNullOrEmpty(filter.Purpose))
-                query = query.Where(x => x.Purpose == filter.Purpose);  
-            if (!string.IsNullOrEmpty(filter.Segment))
-                query = query.Where(x => x.Segment == filter.Segment);  
-
-            if (!string.IsNullOrEmpty(filter.PrioritySector))
-                query = query.Where(x => x.PrioritySector == filter.PrioritySector);  
-
-            if (!string.IsNullOrEmpty(filter.SecureType))
-                query = query.Where(x => x.SecureUnsecure == filter.SecureType); 
-
-            if (!string.IsNullOrEmpty(filter.AccountStatus))
-                query = query.Where(x => x.AccountStatus == filter.AccountStatus);  
-
-            if (filter.Year.HasValue)
-                query = query.Where(x => x.DisbursementYear == filter.Year);
-
-            if (filter.Month.HasValue)
-                query = query.Where(x => x.DisbursementMonth == filter.Month);
-        }
-
-        return await query.AsNoTracking().ToListAsync();
-    }
-
-
-    // MONTHLY TREND
-    public async Task<List<MonthlyTrend>> GetMonthlyTrend(MonthlyTrendFilter? filter)
-    {
-        var query = _context.MonthlyTrend.AsQueryable();
-
-        if (filter != null)
-        {
-            if (filter.Year.HasValue)
-                query = query.Where(x => x.Year == filter.Year); 
-
-            if (filter.Month.HasValue)
-                query = query.Where(x => x.Month == filter.Month); 
-        }
-
-        return await query.AsNoTracking().ToListAsync();
-    }
-
-
-
-    // BANKING SUMMARY
-    public async Task<List<BankingSummary>> GetBankingSummary(SummaryFilter? filter)
-    {
-        var query = _context.BankingSummary.AsQueryable();
-
-        if (filter != null)
-        {
-            if (!string.IsNullOrEmpty(filter.BranchCode))
-                query = query.Where(x => x.BranchCode == filter.BranchCode);  
-        }
-
-        return await query.AsNoTracking().ToListAsync();
-    }
-
-
     public async Task<List<CustomerCountByCategory>> GetCustomerCountByCategory(CustomerCountFilter filter)
     {
         try
@@ -400,6 +283,95 @@ public class DashboardService : IDashboardService
         {
             _logger.LogError(ex, "Error getting HC distribution");
             return new List<HCDistribution>();
+        }
+    }
+
+
+    // CasaSummary
+    public List<CASASummary> GetCASASummary(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Getting CASA summary for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+
+            var result = new List<CASASummary>();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("SP_DEPOSIT_SUMMARY_CASA", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AS_ON_DATE", asOnDate.Date);
+
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            result.Add(new CASASummary
+                            {
+                                Deposit_Type = reader.GetString(0),
+                                Total_Balance = reader.GetDecimal(1),
+                                Cnt = reader.GetInt32(2)
+                            });
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Retrieved {Count} CASA summary rows", result.Count);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting CASA summary");
+            return new List<CASASummary>();
+        }
+    }
+
+
+    // Gl Summary
+    public GLDashboardSummary GetGLDashboardSummary(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Getting GL Dashboard summary for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+
+            var result = new GLDashboardSummary();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("SP_GL_DASHBOARD_SUMMARY", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AS_ON_DATE", asOnDate.Date);
+
+                    connection.Open();
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            result.Total_Assets = reader.GetDecimal(0);
+                            result.Total_Liabilities = reader.GetDecimal(1);
+                            result.Total_Income = reader.GetDecimal(2);
+                            result.Total_Expense = reader.GetDecimal(3);
+                            result.Total_Debit = reader.GetDecimal(4);
+                            result.Total_Credit = reader.GetDecimal(5);
+                            result.Net_Profit = reader.GetDecimal(6);
+                            result.Net_Position = reader.GetDecimal(7);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting GL Dashboard summary");
+            return new GLDashboardSummary();
         }
     }
 }

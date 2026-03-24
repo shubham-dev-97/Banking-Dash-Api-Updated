@@ -19,29 +19,6 @@ public class DashboardController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("home-kpi")]
-    public async Task<IActionResult> GetHomeKpi([FromQuery] HomeFilter filter)
-        => Ok(await _service.GetHomeKpi(filter));
-
-    [HttpGet("deposit-analysis")]
-    public async Task<IActionResult> GetDepositAnalysis([FromQuery] DepositFilter filter)
-        => Ok(await _service.GetDepositAnalysis(filter));
-
-    [HttpGet("loan-analysis")]
-    public async Task<IActionResult> GetLoanAnalysis([FromQuery] LoanFilter filter)
-        => Ok(await _service.GetLoanAnalysis(filter));
-
-    [HttpGet("monthly-trend")]
-    public async Task<IActionResult> GetMonthlyTrend([FromQuery] MonthlyTrendFilter filter)
-        => Ok(await _service.GetMonthlyTrend(filter));
-
-    [HttpGet("summary")]
-    public async Task<IActionResult> GetSummary([FromQuery] SummaryFilter filter)
-        => Ok(await _service.GetBankingSummary(filter));
-
-
-
-
     [HttpGet("customer-count-by-category")]
     public async Task<IActionResult> GetCustomerCountByCategory()
     {
@@ -172,5 +149,39 @@ public class DashboardController : ControllerBase
         }
     }
 
+
+    // Get the CASA Summary
+    [HttpGet("casa-summary")]
+    public IActionResult GetCASASummary([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = _service.GetCASASummary(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetCASASummary");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+
+    //Get the GL Summary
+
+    [HttpGet("gl-dashboard-summary")]
+    public IActionResult GetGLDashboardSummary([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = _service.GetGLDashboardSummary(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetGLDashboardSummary");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 
 }

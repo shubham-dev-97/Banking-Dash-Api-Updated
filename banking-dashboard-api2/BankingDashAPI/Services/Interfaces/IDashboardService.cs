@@ -6,16 +6,7 @@ namespace BankingDashAPI.Services.Interfaces;
 
 public interface IDashboardService
 {
-    Task<HomeKpi?> GetHomeKpi(HomeFilter? filter);
-
-    Task<List<DepositAnalysis>> GetDepositAnalysis(DepositFilter? filter);
-
-    Task<List<LoanAnalysis>> GetLoanAnalysis(LoanFilter? filter);
-
-    Task<List<MonthlyTrend>> GetMonthlyTrend(MonthlyTrendFilter? filter);
-
-    Task<List<BankingSummary>> GetBankingSummary(SummaryFilter? filter);
-
+    
 
     Task<List<CustomerCountByCategory>> GetCustomerCountByCategory(CustomerCountFilter filter);
 
@@ -29,4 +20,8 @@ public interface IDashboardService
     NPASummary GetNPASummary(DateTime asOnDate);
 
     List<HCDistribution> GetHCDistribution(DateTime asOnDate);
+
+    List<CASASummary> GetCASASummary(DateTime asOnDate);
+
+    GLDashboardSummary GetGLDashboardSummary(DateTime asOnDate);
 }   
