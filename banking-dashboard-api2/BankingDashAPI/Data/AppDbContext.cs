@@ -37,6 +37,16 @@ public class AppDbContext : DbContext
     public DbSet<UserBranchAccess> UserBranchAccesses { get; set; }
     public DbSet<UserRegionAccess> UserRegionAccesses { get; set; }
 
+    public DbSet<PortfolioOverview> PortfolioOverviews { get; set; }
+    public DbSet<InterestAndOverdueKPI> InterestAndOverdueKPIs { get; set; }
+
+    public DbSet<DepositPortfolioOverview> DepositPortfolioOverviews { get; set; }
+
+    public DbSet<LoanPortfolioOverview> LoanPortfolioOverviews { get; set; }
+
+    public DbSet<DepositTrend> DepositTrends { get; set; }
+    public DbSet<LoanTrend> LoanTrends { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         
@@ -257,6 +267,76 @@ public class AppDbContext : DbContext
             entity.HasOne<User>()
                 .WithMany()
                 .HasForeignKey(e => e.UserID);
+        });
+
+
+        modelBuilder.Entity<PortfolioOverview>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.Total_Deposit).HasColumnName("Total_Deposit");
+            entity.Property(e => e.Total_Loan).HasColumnName("Total_Loan");
+            entity.Property(e => e.Net_Position).HasColumnName("Net_Position");
+            entity.Property(e => e.Loan_To_Deposit_Ratio).HasColumnName("Loan_To_Deposit_Ratio");
+        });
+
+        // Configure InterestAndOverdueKPI
+        modelBuilder.Entity<InterestAndOverdueKPI>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.Avg_Loan_Interest_Rate).HasColumnName("Avg_Loan_Interest_Rate");
+            entity.Property(e => e.Avg_Deposit_Interest_Rate).HasColumnName("Avg_Deposit_Interest_Rate");
+            entity.Property(e => e.Overdue_Amount).HasColumnName("Overdue_Amount");
+            entity.Property(e => e.Avg_Account_Size).HasColumnName("Avg_Account_Size");
+        });
+
+        modelBuilder.Entity<DepositPortfolioOverview>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.Total_Balance).HasColumnName("Total_Balance");
+            entity.Property(e => e.Total_Accounts).HasColumnName("Total_Accounts");
+            entity.Property(e => e.Avg_Balance).HasColumnName("Avg_Balance");
+            entity.Property(e => e.Avg_Interest_Rate).HasColumnName("Avg_Interest_Rate");
+            entity.Property(e => e.Active_Accounts).HasColumnName("Active_Accounts");
+            entity.Property(e => e.Dormant_Accounts).HasColumnName("Dormant_Accounts");
+            entity.Property(e => e.Closed_Accounts).HasColumnName("Closed_Accounts");
+            entity.Property(e => e.Avg_Account_Size).HasColumnName("Avg_Account_Size");
+        });
+
+        modelBuilder.Entity<LoanPortfolioOverview>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.Total_Loan_Amount).HasColumnName("Total_Loan_Amount");
+            entity.Property(e => e.Total_Outstanding).HasColumnName("Total_Outstanding");
+            entity.Property(e => e.Total_Overdue).HasColumnName("Total_Overdue");
+            entity.Property(e => e.Avg_Interest_Rate).HasColumnName("Avg_Interest_Rate");
+            entity.Property(e => e.Total_Accounts).HasColumnName("Total_Accounts");
+            entity.Property(e => e.Active_Accounts).HasColumnName("Active_Accounts");
+            entity.Property(e => e.Overdue_Accounts).HasColumnName("Overdue_Accounts");
+            entity.Property(e => e.Avg_Loan_Size).HasColumnName("Avg_Loan_Size");
+        });
+
+
+        modelBuilder.Entity<DepositTrend>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.Year).HasColumnName("Year");
+            entity.Property(e => e.Month).HasColumnName("Month");
+            entity.Property(e => e.MonthName).HasColumnName("MonthName");
+            entity.Property(e => e.TotalBalance).HasColumnName("TotalBalance");
+            entity.Property(e => e.AccountCount).HasColumnName("AccountCount");
+            entity.Property(e => e.AverageBalance).HasColumnName("AverageBalance");
+        });
+
+        modelBuilder.Entity<LoanTrend>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.Year).HasColumnName("Year");
+            entity.Property(e => e.Month).HasColumnName("Month");
+            entity.Property(e => e.MonthName).HasColumnName("MonthName");
+            entity.Property(e => e.TotalOutstanding).HasColumnName("TotalOutstanding");
+            entity.Property(e => e.TotalSanctioned).HasColumnName("TotalSanctioned");
+            entity.Property(e => e.AccountCount).HasColumnName("AccountCount");
+            entity.Property(e => e.AverageLoanSize).HasColumnName("AverageLoanSize");
         });
     }
 }

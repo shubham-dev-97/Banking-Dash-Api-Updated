@@ -24,4 +24,15 @@ public interface IDashboardService
     List<CASASummary> GetCASASummary(DateTime asOnDate);
 
     GLDashboardSummary GetGLDashboardSummary(DateTime asOnDate);
+
+
+    Task<PortfolioOverview> GetPortfolioOverviewAsync(DateTime asOnDate);
+    Task<InterestAndOverdueKPI> GetInterestAndOverdueKPIAsync(DateTime asOnDate);
+
+    Task<DepositPortfolioOverview> GetDepositPortfolioOverviewAsync(DateTime asOnDate);
+
+    Task<LoanPortfolioOverview> GetLoanPortfolioOverviewAsync(DateTime asOnDate);
+
+    Task<List<DepositTrend>> GetDepositTrendLast6MonthsAsync(DateTime asOnDate);
+    Task<List<LoanTrend>> GetLoanTrendLast6MonthsAsync(DateTime asOnDate);
 }   

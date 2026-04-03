@@ -184,4 +184,96 @@ public class DashboardController : ControllerBase
         }
     }
 
+
+
+    [HttpGet("portfolio-overview")]
+    public async Task<IActionResult> GetPortfolioOverview([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = await _service.GetPortfolioOverviewAsync(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetPortfolioOverview");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("interest-overdue-kpi")]
+    public async Task<IActionResult> GetInterestAndOverdueKPI([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = await _service.GetInterestAndOverdueKPIAsync(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetInterestAndOverdueKPI");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("deposit-portfolio-overview")]
+    public async Task<IActionResult> GetDepositPortfolioOverview([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = await _service.GetDepositPortfolioOverviewAsync(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetDepositPortfolioOverview");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+
+    [HttpGet("loan-portfolio-overview")]
+    public async Task<IActionResult> GetLoanPortfolioOverview([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = await _service.GetLoanPortfolioOverviewAsync(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetLoanPortfolioOverview");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("deposit-trend")]
+    public async Task<IActionResult> GetDepositTrend([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = await _service.GetDepositTrendLast6MonthsAsync(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetDepositTrend");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("loan-trend")]
+    public async Task<IActionResult> GetLoanTrend([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = await _service.GetLoanTrendLast6MonthsAsync(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetLoanTrend");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 }

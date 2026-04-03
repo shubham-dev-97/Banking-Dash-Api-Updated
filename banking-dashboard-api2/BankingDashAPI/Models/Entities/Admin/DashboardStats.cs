@@ -8,6 +8,6 @@
         public int TotalPages { get; set; }
         public int TodayLogins { get; set; }
         public int FailedLogins { get; set; }
-        public int ActiveSessions { get; set; }
+        public int ActiveSessions { get; set; } 
     }
 }

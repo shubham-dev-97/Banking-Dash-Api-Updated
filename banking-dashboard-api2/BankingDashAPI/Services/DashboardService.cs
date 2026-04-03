@@ -374,4 +374,269 @@ public class DashboardService : IDashboardService
             return new GLDashboardSummary();
         }
     }
+
+
+    public async Task<PortfolioOverview> GetPortfolioOverviewAsync(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching portfolio overview for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+
+            var result = new PortfolioOverview();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("sp_PortfolioOverview", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            result.Total_Deposit = reader.GetDecimal(0);
+                            result.Total_Loan = reader.GetDecimal(1);
+                            result.Net_Position = reader.GetDecimal(2);
+                            result.Loan_To_Deposit_Ratio = reader.GetDecimal(3);
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Portfolio overview retrieved successfully");
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching portfolio overview for date: {Date}", asOnDate);
+            throw;
+        }
+    }
+
+    public async Task<InterestAndOverdueKPI> GetInterestAndOverdueKPIAsync(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching interest and overdue KPI for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+
+            var result = new InterestAndOverdueKPI();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("sp_Interest_And_Overdue_KPI", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            result.Avg_Loan_Interest_Rate = reader.GetDecimal(0);
+                            result.Avg_Deposit_Interest_Rate = reader.GetDecimal(1);
+                            result.Overdue_Amount = reader.GetDecimal(2);
+                            result.Avg_Account_Size = reader.GetDecimal(3);
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Interest and overdue KPI retrieved successfully");
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching interest and overdue KPI for date: {Date}", asOnDate);
+            throw;
+        }
+    }
+
+
+    public async Task<DepositPortfolioOverview> GetDepositPortfolioOverviewAsync(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching deposit portfolio overview for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+
+            var result = new DepositPortfolioOverview();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("sp_DepositPortfolioOverview", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            result.Total_Balance = reader.GetDecimal(0);
+                            result.Total_Accounts = reader.GetInt32(1);
+                            result.Avg_Balance = reader.GetDecimal(2);
+                            result.Avg_Interest_Rate = reader.GetDecimal(3);
+                            result.Active_Accounts = reader.GetInt32(4);
+                            result.Dormant_Accounts = reader.GetInt32(5);
+                            result.Closed_Accounts = reader.GetInt32(6);
+                            result.Avg_Account_Size = reader.GetDecimal(7);
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Deposit portfolio overview retrieved successfully");
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching deposit portfolio overview for date: {Date}", asOnDate);
+            throw;
+        }
+    }
+
+
+    public async Task<LoanPortfolioOverview> GetLoanPortfolioOverviewAsync(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching loan portfolio overview for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+
+            var result = new LoanPortfolioOverview();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("sp_LoanPortfolioOverview", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            result.Total_Loan_Amount = reader.GetDecimal(0);
+                            result.Total_Outstanding = reader.GetDecimal(1);
+                            result.Total_Overdue = reader.GetDecimal(2);
+                            result.Avg_Interest_Rate = reader.GetDecimal(3);
+                            result.Total_Accounts = reader.GetInt32(4);
+                            result.Active_Accounts = reader.GetInt32(5);
+                            result.Overdue_Accounts = reader.GetInt32(6);
+                            result.Avg_Loan_Size = reader.GetDecimal(7);
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Loan portfolio overview retrieved successfully");
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching loan portfolio overview for date: {Date}", asOnDate);
+            throw;
+        }
+    }
+
+
+    public async Task<List<DepositTrend>> GetDepositTrendLast6MonthsAsync(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching deposit trend for last 6 months from date: {Date}",
+                asOnDate.ToString("yyyy-MM-dd"));
+
+            var trends = new List<DepositTrend>();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("sp_GetDepositTrendLast6Months", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            trends.Add(new DepositTrend
+                            {
+                                Year = reader.GetInt32(0),
+                                Month = reader.GetInt32(1),
+                                MonthName = reader.GetString(2),
+                                TotalBalance = reader.GetDecimal(3),
+                                AccountCount = reader.GetInt32(4),
+                                AverageBalance = reader.GetDecimal(5)
+                            });
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Retrieved {Count} months of deposit trend data", trends.Count);
+            return trends;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching deposit trend data");
+            return new List<DepositTrend>();
+        }
+    }
+
+    public async Task<List<LoanTrend>> GetLoanTrendLast6MonthsAsync(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching loan trend for last 6 months from date: {Date}",
+                asOnDate.ToString("yyyy-MM-dd"));
+
+            var trends = new List<LoanTrend>();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("sp_GetLoanTrendLast6Months", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            trends.Add(new LoanTrend
+                            {
+                                Year = reader.GetInt32(0),
+                                Month = reader.GetInt32(1),
+                                MonthName = reader.GetString(2),
+                                TotalOutstanding = reader.GetDecimal(3),
+                                TotalSanctioned = reader.GetDecimal(4),
+                                AccountCount = reader.GetInt32(5),
+                                AverageLoanSize = reader.GetDecimal(6)
+                            });
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Retrieved {Count} months of loan trend data", trends.Count);
+            return trends;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching loan trend data");
+            return new List<LoanTrend>();
+        }
+    }
 }
