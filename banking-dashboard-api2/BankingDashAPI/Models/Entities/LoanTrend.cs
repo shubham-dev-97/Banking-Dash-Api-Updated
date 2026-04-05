@@ -1,4 +1,4 @@
-﻿namespace BankingDashAPI.Models.Entitie
+﻿namespace BankingDashAPI.Models.Entities
 {
     public class LoanTrend
     {

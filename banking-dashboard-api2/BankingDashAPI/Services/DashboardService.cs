@@ -639,4 +639,49 @@ public class DashboardService : IDashboardService
             return new List<LoanTrend>();
         }
     }
+
+
+    public async Task<List<AlmBucketRBI>> GetAlmBucketRBIAsync(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching ALM Bucket RBI data for date: {Date}",
+                asOnDate.ToString("yyyy-MM-dd"));
+
+            var data = new List<AlmBucketRBI>();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("SP_ALM_BUCKET_RBI", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@ASONDATE", asOnDate.Date);
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            data.Add(new AlmBucketRBI
+                            {
+                                RBI_BUCKET = reader.GetString(0),
+                                NO_OF_ACCOUNTS = reader.GetInt32(1),
+                                OUTSTANDING_BALANCE = reader.GetDecimal(2),
+                                MATURITY_AMOUNT = reader.GetDecimal(3)
+                            });
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Retrieved {Count} ALM buckets", data.Count);
+            return data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching ALM Bucket RBI data");
+            throw;
+        }
+    }
 }

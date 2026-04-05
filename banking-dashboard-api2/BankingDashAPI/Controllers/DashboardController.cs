@@ -276,4 +276,19 @@ public class DashboardController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
+    [HttpGet("alm-bucket-rbi")]
+    public async Task<IActionResult> GetAlmBucketRBI([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = await _service.GetAlmBucketRBIAsync(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetAlmBucketRBI");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 }

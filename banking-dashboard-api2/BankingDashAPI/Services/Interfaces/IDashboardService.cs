@@ -35,4 +35,7 @@ public interface IDashboardService
 
     Task<List<DepositTrend>> GetDepositTrendLast6MonthsAsync(DateTime asOnDate);
     Task<List<LoanTrend>> GetLoanTrendLast6MonthsAsync(DateTime asOnDate);
+
+
+    Task<List<AlmBucketRBI>> GetAlmBucketRBIAsync(DateTime asOnDate);
 }   

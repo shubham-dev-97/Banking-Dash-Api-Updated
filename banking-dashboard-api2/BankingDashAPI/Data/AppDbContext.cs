@@ -46,6 +46,7 @@ public class AppDbContext : DbContext
 
     public DbSet<DepositTrend> DepositTrends { get; set; }
     public DbSet<LoanTrend> LoanTrends { get; set; }
+    public DbSet<AlmBucketRBI> AlmBucketRBIs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -337,6 +338,15 @@ public class AppDbContext : DbContext
             entity.Property(e => e.TotalSanctioned).HasColumnName("TotalSanctioned");
             entity.Property(e => e.AccountCount).HasColumnName("AccountCount");
             entity.Property(e => e.AverageLoanSize).HasColumnName("AverageLoanSize");
+        });
+
+        modelBuilder.Entity<AlmBucketRBI>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.RBI_BUCKET).HasColumnName("RBI_BUCKET");
+            entity.Property(e => e.NO_OF_ACCOUNTS).HasColumnName("NO_OF_ACCOUNTS");
+            entity.Property(e => e.OUTSTANDING_BALANCE).HasColumnName("OUTSTANDING_BALANCE");
+            entity.Property(e => e.MATURITY_AMOUNT).HasColumnName("MATURITY_AMOUNT");
         });
     }
 }
