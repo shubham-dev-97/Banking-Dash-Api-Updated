@@ -684,4 +684,367 @@ public class DashboardService : IDashboardService
             throw;
         }
     }
+
+    public async Task<List<DepLoanMonthlyTrend>> GetDepLoanMonthlyTrendWithCDRatioAsync(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching Deposit vs Loan monthly trend with CD Ratio for date: {Date}",
+                asOnDate.ToString("yyyy-MM-dd"));
+
+            var trends = new List<DepLoanMonthlyTrend>();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("SP_DEP_LOAN_MONTHEND_WITH_CDRATIO", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            trends.Add(new DepLoanMonthlyTrend
+                            {
+                                MONTH_END = reader.GetDateTime(0),
+                                DepositBal = reader.GetDecimal(1),
+                                LoanBal = reader.GetDecimal(2),
+                                CD_RATIO_PERCENT = reader.GetDecimal(3),
+                                Deposit_tag = reader.GetString(4),
+                                Loan_tag = reader.GetString(5)
+                            });
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Retrieved {Count} months of deposit-loan trend data", trends.Count);
+            return trends;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching deposit-loan monthly trend data");
+            return new List<DepLoanMonthlyTrend>();
+        }
+
+
+    }
+
+
+    public async Task<List<RbiLoanAuditDump>> GetRbiLoanAuditDumpAsync(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching RBI Loan Audit Dump for date: {Date}",
+                asOnDate.ToString("yyyy-MM-dd"));
+
+            var data = new List<RbiLoanAuditDump>();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("SP_RBI_LOAN_AUDIT_DUMP", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@ASONDATE", asOnDate.Date);
+                    command.CommandTimeout = 300; // 5 minutes timeout
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var record = new RbiLoanAuditDump();
+
+                            // Safe reading with Convert for all columns - using lowercase/mixed-case properties
+                            record.reporT_DATE = reader.GetDateTime(0);
+                            record.brancH_ID = Convert.ToInt64(reader.GetValue(1));
+                            record.loaN_ACCOUNT_NO = Convert.ToInt64(reader.GetValue(2));
+                            record.customeR_ID = reader.GetString(3);
+                            record.borroweR_NAME = reader.GetString(4);
+                            record.customeR_TYPE = reader.GetString(5);
+                            record.dob = reader.IsDBNull(6) ? null : reader.GetDateTime(6);
+                            record.gender = reader.GetString(7);
+                            record.paN_NO = reader.GetString(8);
+                            record.ckyC_ID = reader.GetString(9);
+                            record.gsT_NO = reader.GetString(10);
+                            record.addresS_LINE1 = reader.GetString(11);
+                            record.addresS_LINE2 = reader.GetString(12);
+                            record.addresS_LINE3 = reader.GetString(13);
+                            record.city = reader.GetString(14);
+                            record.pincode = reader.GetString(15);
+                            record.mobilE_NO = reader.GetString(16);
+                            record.emaiL_ID = reader.GetString(17);
+                            record.loaN_PRODUCT_CODE = reader.GetString(18);
+                            record.loaN_PURPOSE = reader.GetString(19);
+                            record.prioritY_SECTOR = reader.GetString(20);
+                            record.psL_CODE = reader.GetString(21);
+                            record.customeR_SEGMENT = reader.GetString(22);
+                            record.sanctioN_DATE = reader.IsDBNull(23) ? null : reader.GetDateTime(23);
+                            record.disbursemenT_DATE = reader.IsDBNull(24) ? null : reader.GetDateTime(24);
+                            record.sanctioN_AMOUNT = Convert.ToDecimal(reader.GetValue(25));
+                            record.sanctioneD_BY = reader.GetString(26);
+                            record.accounT_OPEN_DATE = reader.IsDBNull(27) ? null : reader.GetDateTime(27);
+                            record.maturitY_DATE = reader.IsDBNull(28) ? null : reader.GetDateTime(28);
+                            record.outstandinG_AMOUNT = Convert.ToDecimal(reader.GetValue(29));
+                            record.interesT_RECEIVABLE = Convert.ToDecimal(reader.GetValue(30));
+                            record.emI_AMOUNT = Convert.ToDecimal(reader.GetValue(31));
+                            record.securitY_VALUE = Convert.ToDecimal(reader.GetValue(32));
+                            record.roi = Convert.ToDecimal(reader.GetValue(33));
+                            record.repaymenT_MODE = reader.GetString(34);
+                            record.tenure = Convert.ToDecimal(reader.GetValue(35));
+                            record.asseT_CLASSIFICATION = reader.GetString(36);
+                            record.internaL_RATING = reader.GetString(37);
+                            record.weakeR_SECTION_FLAG = reader.GetString(38);
+                            record.securitY_TYPE = reader.GetString(39);
+                            record.overduE_AMOUNT = Convert.ToDecimal(reader.GetValue(40));
+                            record.dayS_PAST_DUE = Convert.ToDecimal(reader.GetValue(41));
+                            record.datE_OF_DEFAULT = reader.IsDBNull(42) ? null : reader.GetDateTime(42);
+                            record.provisioN_PERCENT = Convert.ToDecimal(reader.GetValue(43));
+                            record.secureD_PROVISION = Convert.ToDecimal(reader.GetValue(44));
+                            record.unsecureD_PROVISION = Convert.ToDecimal(reader.GetValue(45));
+                            record.totaL_PROVISION = Convert.ToDecimal(reader.GetValue(46));
+                            record.rbI_ASSET_CLASS = reader.GetString(47);
+                            record.reporT_TYPE = reader.GetString(48);
+
+                            data.Add(record);
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Retrieved {Count} loan audit records", data.Count);
+            return data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching RBI Loan Audit Dump data");
+            throw;
+        }
+    }
+
+    public async Task<List<RbiDepositAuditDump>> GetRbiDepositAuditDumpAsync(DateTime asOnDate)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching RBI Deposit Audit Dump for date: {Date}",
+                asOnDate.ToString("yyyy-MM-dd"));
+
+            var data = new List<RbiDepositAuditDump>();
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("SP_RBI_DEPOSIT_AUDIT_DUMP", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AS_ON_DATE", asOnDate.Date);
+                    command.CommandTimeout = 300;
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            var record = new RbiDepositAuditDump();
+
+                            // Map all columns here (same as before)
+                            record.REPORT_DATE = reader.GetDateTime(0);
+                            record.BRANCH_ID = reader.GetString(1);
+                            record.GL_CODE = reader.GetString(2);
+                            record.ACCOUNT_NO = reader.GetString(3);
+                            record.ACCOUNT_NAME = reader.GetString(4);
+                            record.SCHEME_CODE = reader.GetString(5);
+                            record.PRODUCT_TYPE = reader.GetString(6);
+                            record.CUSTOMER_ID = reader.GetString(7);
+                            record.CUSTOMER_NAME = reader.GetString(8);
+                            record.FATHER_NAME = reader.GetString(9);
+                            record.MOTHER_NAME = reader.GetString(10);
+                            record.DOB = reader.IsDBNull(11) ? null : reader.GetDateTime(11);
+                            record.GENDER = reader.GetString(12);
+                            record.CUSTOMER_CATEGORY = reader.GetString(13);
+                            record.CUSTOMER_CLASSIFICATION = reader.GetString(14);
+                            record.CUSTOMER_STATUS = reader.GetString(15);
+                            record.KYC_STATUS = reader.GetString(16);
+                            record.CKYC_NUMBER = reader.GetString(17);
+                            record.PAN = reader.GetString(18);
+                            record.FATCA_STATUS = reader.GetString(19);
+                            record.AML_RISK_CATEGORY = reader.GetString(20);
+                            record.FORM15G_H_STATUS = reader.GetString(21);
+                            record.ACCOUNT_STATUS = reader.GetString(22);
+                            record.INOPERATIVE_FLAG = reader.GetString(23);
+                            record.DORMANT_STATUS = reader.GetString(24);
+                            record.LIEN_STATUS = reader.GetString(25);
+                            record.ACCOUNT_OPEN_DATE = reader.IsDBNull(26) ? null : reader.GetDateTime(26);
+                            record.ACCOUNT_CLOSE_DATE = reader.IsDBNull(27) ? null : reader.GetDateTime(27);
+                            record.LAST_TRANSACTION_DATE = reader.IsDBNull(28) ? null : reader.GetDateTime(28);
+                            record.DEPOSIT_START_DATE = reader.IsDBNull(29) ? null : reader.GetDateTime(29);
+                            record.MATURITY_DATE = reader.IsDBNull(30) ? null : reader.GetDateTime(30);
+                            record.DEPOSIT_END_DATE = reader.IsDBNull(31) ? null : reader.GetDateTime(31);
+                            record.CURRENT_BALANCE = reader.GetDecimal(32);
+                            record.DEPOSIT_AMOUNT = reader.GetDecimal(33);
+                            record.MATURITY_AMOUNT = reader.GetDecimal(34);
+                            record.TOTAL_CREDITS = reader.GetDecimal(35);
+                            record.TOTAL_DEBITS = reader.GetDecimal(36);
+                            record.AVG_QUARTERLY_BALANCE = reader.GetDecimal(37);
+                            record.INTEREST_RATE = reader.GetDecimal(38);
+                            record.INTEREST_PAYOUT_MODE = reader.GetString(39);
+                            record.TOTAL_TRANSACTIONS = Convert.ToInt32(reader.GetDecimal(40));
+                            record.ADDRESS_LINE1 = reader.GetString(41);
+                            record.ADDRESS_LINE2 = reader.GetString(42);
+                            record.ADDRESS_LINE3 = reader.GetString(43);
+                            record.CITY = reader.GetString(44);
+                            record.PIN_CODE = reader.GetString(45);
+                            record.STATE_CODE = reader.GetString(46);
+                            record.MOBILE_NO = reader.GetString(47);
+                            record.EMAIL_ID = reader.GetString(48);
+                            record.MEMBER_TYPE = reader.GetString(49);
+                            record.MEMBER_ID = reader.GetString(50);
+                            record.DEPOSIT_RECEIPT_NO = reader.GetString(51);
+                            record.DEPOSIT_TYPE_CODE = reader.GetString(52);
+                            record.DEPOSIT_STATUS = reader.GetString(53);
+                            record.DEPOSIT_TENURE = reader.GetString(54);
+                            record.DEPOSIT_TYPE = reader.GetString(55);
+                            record.DEPOSIT_SIZE_FLAG = reader.GetString(56);
+                            record.KYC_RISK_FLAG = reader.GetString(57);
+                            record.AML_RISK_LEVEL = reader.GetString(58);
+                            record.ACCOUNT_ACTIVITY_STATUS = reader.GetString(59);
+                            record.AUDIT_REMARK = reader.GetString(60);
+
+                            data.Add(record);
+                        }
+                    }
+                }
+            }
+
+            return data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching RBI Deposit Audit Dump data");
+            throw;
+        }
+    }
+
+
+
+
+    public async Task<(List<RbiDepositAuditDump> Data, int TotalCount)> GetRbiDepositAuditDumpPaginatedAsync(DateTime asOnDate, int pageNumber, int pageSize)
+    {
+        try
+        {
+            _logger.LogInformation("Fetching RBI Deposit Audit Dump for date: {Date}, Page: {Page}, Size: {Size}",
+                asOnDate.ToString("yyyy-MM-dd"), pageNumber, pageSize);
+
+            var data = new List<RbiDepositAuditDump>();
+            int totalCount = 0;
+
+            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            {
+                using (var command = new SqlCommand("SP_RBI_DEPOSIT_AUDIT_DUMP_PAGINATED", connection))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@AS_ON_DATE", asOnDate.Date);
+                    command.Parameters.AddWithValue("@PAGE_NUMBER", pageNumber);
+                    command.Parameters.AddWithValue("@PAGE_SIZE", pageSize);
+                    command.CommandTimeout = 60;
+
+                    await connection.OpenAsync();
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        // First result set - Total Count
+                        if (await reader.ReadAsync())
+                        {
+                            totalCount = reader.GetInt32(0);
+                        }
+
+                        // Second result set - Data
+                        await reader.NextResultAsync();
+                        while (await reader.ReadAsync())
+                        {
+                            var record = new RbiDepositAuditDump();
+
+                            // Map all columns here (same as above)
+                            record.REPORT_DATE = reader.GetDateTime(0);
+                            record.BRANCH_ID = reader.GetString(1);
+                            record.GL_CODE = reader.GetString(2);
+                            record.ACCOUNT_NO = reader.GetString(3);
+                            record.ACCOUNT_NAME = reader.GetString(4);
+                            record.SCHEME_CODE = reader.GetString(5);
+                            record.PRODUCT_TYPE = reader.GetString(6);
+                            record.CUSTOMER_ID = reader.GetString(7);
+                            record.CUSTOMER_NAME = reader.GetString(8);
+                            record.FATHER_NAME = reader.GetString(9);
+                            record.MOTHER_NAME = reader.GetString(10);
+                            record.DOB = reader.IsDBNull(11) ? null : reader.GetDateTime(11);
+                            record.GENDER = reader.GetString(12);
+                            record.CUSTOMER_CATEGORY = reader.GetString(13);
+                            record.CUSTOMER_CLASSIFICATION = reader.GetString(14);
+                            record.CUSTOMER_STATUS = reader.GetString(15);
+                            record.KYC_STATUS = reader.GetString(16);
+                            record.CKYC_NUMBER = reader.GetString(17);
+                            record.PAN = reader.GetString(18);
+                            record.FATCA_STATUS = reader.GetString(19);
+                            record.AML_RISK_CATEGORY = reader.GetString(20);
+                            record.FORM15G_H_STATUS = reader.GetString(21);
+                            record.ACCOUNT_STATUS = reader.GetString(22);
+                            record.INOPERATIVE_FLAG = reader.GetString(23);
+                            record.DORMANT_STATUS = reader.GetString(24);
+                            record.LIEN_STATUS = reader.GetString(25);
+                            record.ACCOUNT_OPEN_DATE = reader.IsDBNull(26) ? null : reader.GetDateTime(26);
+                            record.ACCOUNT_CLOSE_DATE = reader.IsDBNull(27) ? null : reader.GetDateTime(27);
+                            record.LAST_TRANSACTION_DATE = reader.IsDBNull(28) ? null : reader.GetDateTime(28);
+                            record.DEPOSIT_START_DATE = reader.IsDBNull(29) ? null : reader.GetDateTime(29);
+                            record.MATURITY_DATE = reader.IsDBNull(30) ? null : reader.GetDateTime(30);
+                            record.DEPOSIT_END_DATE = reader.IsDBNull(31) ? null : reader.GetDateTime(31);
+                            record.CURRENT_BALANCE = reader.GetDecimal(32);
+                            record.DEPOSIT_AMOUNT = reader.GetDecimal(33);
+                            record.MATURITY_AMOUNT = reader.GetDecimal(34);
+                            record.TOTAL_CREDITS = reader.GetDecimal(35);
+                            record.TOTAL_DEBITS = reader.GetDecimal(36);
+                            record.AVG_QUARTERLY_BALANCE = reader.GetDecimal(37);
+                            record.INTEREST_RATE = reader.GetDecimal(38);
+                            record.INTEREST_PAYOUT_MODE = reader.GetString(39);
+                            record.TOTAL_TRANSACTIONS = Convert.ToInt32(reader.GetDecimal(40));
+                            record.ADDRESS_LINE1 = reader.GetString(41);
+                            record.ADDRESS_LINE2 = reader.GetString(42);
+                            record.ADDRESS_LINE3 = reader.GetString(43);
+                            record.CITY = reader.GetString(44);
+                            record.PIN_CODE = reader.GetString(45);
+                            record.STATE_CODE = reader.GetString(46);
+                            record.MOBILE_NO = reader.GetString(47);
+                            record.EMAIL_ID = reader.GetString(48);
+                            record.MEMBER_TYPE = reader.GetString(49);
+                            record.MEMBER_ID = reader.GetString(50);
+                            record.DEPOSIT_RECEIPT_NO = reader.GetString(51);
+                            record.DEPOSIT_TYPE_CODE = reader.GetString(52);
+                            record.DEPOSIT_STATUS = reader.GetString(53);
+                            record.DEPOSIT_TENURE = reader.GetString(54);
+                            record.DEPOSIT_TYPE = reader.GetString(55);
+                            record.DEPOSIT_SIZE_FLAG = reader.GetString(56);
+                            record.KYC_RISK_FLAG = reader.GetString(57);
+                            record.AML_RISK_LEVEL = reader.GetString(58);
+                            record.ACCOUNT_ACTIVITY_STATUS = reader.GetString(59);
+                            record.AUDIT_REMARK = reader.GetString(60);
+
+                            data.Add(record);
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation("Retrieved {Count} of {TotalCount} deposit audit records", data.Count, totalCount);
+            return (data, totalCount);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching RBI Deposit Audit Dump paginated data");
+            throw;
+        }
+    }
+
 }

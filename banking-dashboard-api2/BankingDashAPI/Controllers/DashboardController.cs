@@ -291,4 +291,79 @@ public class DashboardController : ControllerBase
             return StatusCode(500, new { error = ex.Message });
         }
     }
+
+
+    [HttpGet("dep-loan-monthly-trend")]
+    public async Task<IActionResult> GetDepLoanMonthlyTrendWithCDRatio([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = await _service.GetDepLoanMonthlyTrendWithCDRatioAsync(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetDepLoanMonthlyTrendWithCDRatio");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+
+
+    [HttpGet("rbi-loan-audit")]
+    public async Task<IActionResult> GetRbiLoanAuditDump([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = await _service.GetRbiLoanAuditDumpAsync(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetRbiLoanAuditDump");
+            return StatusCode(500, new { error = ex.Message, details = ex.InnerException?.Message });
+        }
+    }
+
+    [HttpGet("rbi-deposit-audit")]
+    public async Task<IActionResult> GetRbiDepositAuditDump([FromQuery] DateTime asOnDate)
+    {
+        try
+        {
+            var data = await _service.GetRbiDepositAuditDumpAsync(asOnDate);
+            return Ok(data);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetRbiDepositAuditDump");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
+
+
+   
+    [HttpGet("rbi-deposit-audit-paginated")]
+    public async Task<IActionResult> GetRbiDepositAuditDumpPaginated(
+    [FromQuery] DateTime asOnDate,
+    [FromQuery] int pageNumber = 1,
+    [FromQuery] int pageSize = 50)
+    {
+        try
+        {
+            var (data, totalCount) = await _service.GetRbiDepositAuditDumpPaginatedAsync(asOnDate, pageNumber, pageSize);
+            return Ok(new
+            {
+                data = data,
+                totalCount = totalCount,
+                pageNumber = pageNumber,
+                pageSize = pageSize,
+                totalPages = (int)Math.Ceiling((double)totalCount / pageSize)
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in GetRbiDepositAuditDumpPaginated");
+            return StatusCode(500, new { error = ex.Message });
+        }
+    }
 }

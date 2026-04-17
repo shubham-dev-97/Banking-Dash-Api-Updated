@@ -97,11 +97,11 @@
               "type": "Microsoft.ApiManagement/service/apis",
               "name": "BankingDashAPIapi/BankingDashAPI",
               "properties": {
-                "displayName": "BankingDashAPI",
+                "displayName": "BankingDashAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
                 "apiRevision": "1",
                 "description": null,
                 "subscriptionRequired": true,
-                "serviceUrl": null,
+                "serviceUrl": "https://nerofinsbankapi.azurewebsites.net",
                 "path": "test",
                 "protocols": [
                   "https"

@@ -38,4 +38,14 @@ public interface IDashboardService
 
 
     Task<List<AlmBucketRBI>> GetAlmBucketRBIAsync(DateTime asOnDate);
-}   
+
+
+    Task<List<DepLoanMonthlyTrend>> GetDepLoanMonthlyTrendWithCDRatioAsync(DateTime asOnDate);
+
+    Task<List<RbiLoanAuditDump>> GetRbiLoanAuditDumpAsync(DateTime asOnDate);
+
+    Task<List<RbiDepositAuditDump>> GetRbiDepositAuditDumpAsync(DateTime asOnDate);
+
+
+    Task<(List<RbiDepositAuditDump> Data, int TotalCount)> GetRbiDepositAuditDumpPaginatedAsync(DateTime asOnDate, int pageNumber, int pageSize);
+}

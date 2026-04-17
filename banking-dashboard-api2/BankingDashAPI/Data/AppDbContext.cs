@@ -48,6 +48,12 @@ public class AppDbContext : DbContext
     public DbSet<LoanTrend> LoanTrends { get; set; }
     public DbSet<AlmBucketRBI> AlmBucketRBIs { get; set; }
 
+    public DbSet<DepLoanMonthlyTrend> DepLoanMonthlyTrends { get; set; }
+
+    public DbSet<RbiLoanAuditDump> RbiLoanAuditDumps { get; set; }
+
+
+    public DbSet<RbiDepositAuditDump> RbiDepositAuditDumps { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         
@@ -348,5 +354,176 @@ public class AppDbContext : DbContext
             entity.Property(e => e.OUTSTANDING_BALANCE).HasColumnName("OUTSTANDING_BALANCE");
             entity.Property(e => e.MATURITY_AMOUNT).HasColumnName("MATURITY_AMOUNT");
         });
+
+
+        // Configure DepLoanMonthlyTrend
+        modelBuilder.Entity<DepLoanMonthlyTrend>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.MONTH_END).HasColumnName("MONTH_END");
+            entity.Property(e => e.DepositBal).HasColumnName("DepositBal");
+            entity.Property(e => e.LoanBal).HasColumnName("LoanBal");
+            entity.Property(e => e.CD_RATIO_PERCENT).HasColumnName("CD_RATIO_PERCENT");
+            entity.Property(e => e.Deposit_tag).HasColumnName("Deposit_tag");
+            entity.Property(e => e.Loan_tag).HasColumnName("Loan_tag");
+        });
+
+
+
+        // Configure RbiLoanAuditDump
+        modelBuilder.Entity<RbiLoanAuditDump>(entity =>
+        {
+            entity.HasNoKey();
+
+            // Reporting Date
+            entity.Property(e => e.reporT_DATE).HasColumnName("REPORT_DATE");
+
+            // Branch / Account
+            entity.Property(e => e.brancH_ID).HasColumnName("BRANCH_ID");
+            entity.Property(e => e.loaN_ACCOUNT_NO).HasColumnName("LOAN_ACCOUNT_NO");
+            entity.Property(e => e.customeR_ID).HasColumnName("CUSTOMER_ID");
+            entity.Property(e => e.borroweR_NAME).HasColumnName("BORROWER_NAME");
+
+            // Customer Details
+            entity.Property(e => e.customeR_TYPE).HasColumnName("CUSTOMER_TYPE");
+            entity.Property(e => e.dob).HasColumnName("DOB");
+            entity.Property(e => e.gender).HasColumnName("GENDER");
+            entity.Property(e => e.paN_NO).HasColumnName("PAN_NO");
+            entity.Property(e => e.ckyC_ID).HasColumnName("CKYC_ID");
+            entity.Property(e => e.gsT_NO).HasColumnName("GST_NO");
+
+            // Address
+            entity.Property(e => e.addresS_LINE1).HasColumnName("ADDRESS_LINE1");
+            entity.Property(e => e.addresS_LINE2).HasColumnName("ADDRESS_LINE2");
+            entity.Property(e => e.addresS_LINE3).HasColumnName("ADDRESS_LINE3");
+            entity.Property(e => e.city).HasColumnName("CITY");
+            entity.Property(e => e.pincode).HasColumnName("PINCODE");
+            entity.Property(e => e.mobilE_NO).HasColumnName("MOBILE_NO");
+            entity.Property(e => e.emaiL_ID).HasColumnName("EMAIL_ID");
+
+            // Loan Details
+            entity.Property(e => e.loaN_PRODUCT_CODE).HasColumnName("LOAN_PRODUCT_CODE");
+            entity.Property(e => e.loaN_PURPOSE).HasColumnName("LOAN_PURPOSE");
+            entity.Property(e => e.prioritY_SECTOR).HasColumnName("PRIORITY_SECTOR");
+            entity.Property(e => e.psL_CODE).HasColumnName("PSL_CODE");
+            entity.Property(e => e.customeR_SEGMENT).HasColumnName("CUSTOMER_SEGMENT");
+
+            // Sanction Details
+            entity.Property(e => e.sanctioN_DATE).HasColumnName("SANCTION_DATE");
+            entity.Property(e => e.disbursemenT_DATE).HasColumnName("DISBURSEMENT_DATE");
+            entity.Property(e => e.sanctioN_AMOUNT).HasColumnName("SANCTION_AMOUNT");
+            entity.Property(e => e.sanctioneD_BY).HasColumnName("SANCTIONED_BY");
+
+            // Account Dates
+            entity.Property(e => e.accounT_OPEN_DATE).HasColumnName("ACCOUNT_OPEN_DATE");
+            entity.Property(e => e.maturitY_DATE).HasColumnName("MATURITY_DATE");
+
+            // Financials
+            entity.Property(e => e.outstandinG_AMOUNT).HasColumnName("OUTSTANDING_AMOUNT");
+            entity.Property(e => e.interesT_RECEIVABLE).HasColumnName("INTEREST_RECEIVABLE");
+            entity.Property(e => e.emI_AMOUNT).HasColumnName("EMI_AMOUNT");
+            entity.Property(e => e.securitY_VALUE).HasColumnName("SECURITY_VALUE");
+
+            // Interest
+            entity.Property(e => e.roi).HasColumnName("ROI");
+
+            // Repayment
+            entity.Property(e => e.repaymenT_MODE).HasColumnName("REPAYMENT_MODE");
+            entity.Property(e => e.tenure).HasColumnName("TENURE");
+
+            // Asset Classification
+            entity.Property(e => e.asseT_CLASSIFICATION).HasColumnName("ASSET_CLASSIFICATION");
+            entity.Property(e => e.internaL_RATING).HasColumnName("INTERNAL_RATING");
+            entity.Property(e => e.weakeR_SECTION_FLAG).HasColumnName("WEAKER_SECTION_FLAG");
+            entity.Property(e => e.securitY_TYPE).HasColumnName("SECURITY_TYPE");
+
+            // Overdue / Delinquency
+            entity.Property(e => e.overduE_AMOUNT).HasColumnName("OVERDUE_AMOUNT");
+            entity.Property(e => e.dayS_PAST_DUE).HasColumnName("DAYS_PAST_DUE");
+            entity.Property(e => e.datE_OF_DEFAULT).HasColumnName("DATE_OF_DEFAULT");
+
+            // Provisioning
+            entity.Property(e => e.provisioN_PERCENT).HasColumnName("PROVISION_PERCENT");
+            entity.Property(e => e.secureD_PROVISION).HasColumnName("SECURED_PROVISION");
+            entity.Property(e => e.unsecureD_PROVISION).HasColumnName("UNSECURED_PROVISION");
+            entity.Property(e => e.totaL_PROVISION).HasColumnName("TOTAL_PROVISION");
+
+            // NPA Classification
+            entity.Property(e => e.rbI_ASSET_CLASS).HasColumnName("RBI_ASSET_CLASS");
+
+            // Tag
+            entity.Property(e => e.reporT_TYPE).HasColumnName("REPORT_TYPE");
+        });
+
+
+
+        // Configure RbiDepositAuditDump
+        modelBuilder.Entity<RbiDepositAuditDump>(entity =>
+        {
+            entity.HasNoKey();
+
+            entity.Property(e => e.REPORT_DATE).HasColumnName("REPORT_DATE");
+            entity.Property(e => e.BRANCH_ID).HasColumnName("BRANCH_ID");
+            entity.Property(e => e.GL_CODE).HasColumnName("GL_CODE");
+            entity.Property(e => e.ACCOUNT_NO).HasColumnName("ACCOUNT_NO");
+            entity.Property(e => e.ACCOUNT_NAME).HasColumnName("ACCOUNT_NAME");
+            entity.Property(e => e.SCHEME_CODE).HasColumnName("SCHEME_CODE");
+            entity.Property(e => e.PRODUCT_TYPE).HasColumnName("PRODUCT_TYPE");
+            entity.Property(e => e.CUSTOMER_ID).HasColumnName("CUSTOMER_ID");
+            entity.Property(e => e.CUSTOMER_NAME).HasColumnName("CUSTOMER_NAME");
+            entity.Property(e => e.FATHER_NAME).HasColumnName("FATHER_NAME");
+            entity.Property(e => e.MOTHER_NAME).HasColumnName("MOTHER_NAME");
+            entity.Property(e => e.DOB).HasColumnName("DOB");
+            entity.Property(e => e.GENDER).HasColumnName("GENDER");
+            entity.Property(e => e.CUSTOMER_CATEGORY).HasColumnName("CUSTOMER_CATEGORY");
+            entity.Property(e => e.CUSTOMER_CLASSIFICATION).HasColumnName("CUSTOMER_CLASSIFICATION");
+            entity.Property(e => e.CUSTOMER_STATUS).HasColumnName("CUSTOMER_STATUS");
+            entity.Property(e => e.KYC_STATUS).HasColumnName("KYC_STATUS");
+            entity.Property(e => e.CKYC_NUMBER).HasColumnName("CKYC_NUMBER");
+            entity.Property(e => e.PAN).HasColumnName("PAN");
+            entity.Property(e => e.FATCA_STATUS).HasColumnName("FATCA_STATUS");
+            entity.Property(e => e.AML_RISK_CATEGORY).HasColumnName("AML_RISK_CATEGORY");
+            entity.Property(e => e.FORM15G_H_STATUS).HasColumnName("FORM15G_H_STATUS");
+            entity.Property(e => e.ACCOUNT_STATUS).HasColumnName("ACCOUNT_STATUS");
+            entity.Property(e => e.INOPERATIVE_FLAG).HasColumnName("INOPERATIVE_FLAG");
+            entity.Property(e => e.DORMANT_STATUS).HasColumnName("DORMANT_STATUS");
+            entity.Property(e => e.LIEN_STATUS).HasColumnName("LIEN_STATUS");
+            entity.Property(e => e.ACCOUNT_OPEN_DATE).HasColumnName("ACCOUNT_OPEN_DATE");
+            entity.Property(e => e.ACCOUNT_CLOSE_DATE).HasColumnName("ACCOUNT_CLOSE_DATE");
+            entity.Property(e => e.LAST_TRANSACTION_DATE).HasColumnName("LAST_TRANSACTION_DATE");
+            entity.Property(e => e.DEPOSIT_START_DATE).HasColumnName("DEPOSIT_START_DATE");
+            entity.Property(e => e.MATURITY_DATE).HasColumnName("MATURITY_DATE");
+            entity.Property(e => e.DEPOSIT_END_DATE).HasColumnName("DEPOSIT_END_DATE");
+            entity.Property(e => e.CURRENT_BALANCE).HasColumnName("CURRENT_BALANCE");
+            entity.Property(e => e.DEPOSIT_AMOUNT).HasColumnName("DEPOSIT_AMOUNT");
+            entity.Property(e => e.MATURITY_AMOUNT).HasColumnName("MATURITY_AMOUNT");
+            entity.Property(e => e.TOTAL_CREDITS).HasColumnName("TOTAL_CREDITS");
+            entity.Property(e => e.TOTAL_DEBITS).HasColumnName("TOTAL_DEBITS");
+            entity.Property(e => e.AVG_QUARTERLY_BALANCE).HasColumnName("AVG_QUARTERLY_BALANCE");
+            entity.Property(e => e.INTEREST_RATE).HasColumnName("INTEREST_RATE");
+            entity.Property(e => e.INTEREST_PAYOUT_MODE).HasColumnName("INTEREST_PAYOUT_MODE");
+            entity.Property(e => e.TOTAL_TRANSACTIONS).HasColumnName("TOTAL_TRANSACTIONS");
+            entity.Property(e => e.ADDRESS_LINE1).HasColumnName("ADDRESS_LINE1");
+            entity.Property(e => e.ADDRESS_LINE2).HasColumnName("ADDRESS_LINE2");
+            entity.Property(e => e.ADDRESS_LINE3).HasColumnName("ADDRESS_LINE3");
+            entity.Property(e => e.CITY).HasColumnName("CITY");
+            entity.Property(e => e.PIN_CODE).HasColumnName("PIN_CODE");
+            entity.Property(e => e.STATE_CODE).HasColumnName("STATE_CODE");
+            entity.Property(e => e.MOBILE_NO).HasColumnName("MOBILE_NO");
+            entity.Property(e => e.EMAIL_ID).HasColumnName("EMAIL_ID");
+            entity.Property(e => e.MEMBER_TYPE).HasColumnName("MEMBER_TYPE");
+            entity.Property(e => e.MEMBER_ID).HasColumnName("MEMBER_ID");
+            entity.Property(e => e.DEPOSIT_RECEIPT_NO).HasColumnName("DEPOSIT_RECEIPT_NO");
+            entity.Property(e => e.DEPOSIT_TYPE_CODE).HasColumnName("DEPOSIT_TYPE_CODE");
+            entity.Property(e => e.DEPOSIT_STATUS).HasColumnName("DEPOSIT_STATUS");
+            entity.Property(e => e.DEPOSIT_TENURE).HasColumnName("DEPOSIT_TENURE");
+            entity.Property(e => e.DEPOSIT_TYPE).HasColumnName("DEPOSIT_TYPE");
+            entity.Property(e => e.DEPOSIT_SIZE_FLAG).HasColumnName("DEPOSIT_SIZE_FLAG");
+            entity.Property(e => e.KYC_RISK_FLAG).HasColumnName("KYC_RISK_FLAG");
+            entity.Property(e => e.AML_RISK_LEVEL).HasColumnName("AML_RISK_LEVEL");
+            entity.Property(e => e.ACCOUNT_ACTIVITY_STATUS).HasColumnName("ACCOUNT_ACTIVITY_STATUS");
+            entity.Property(e => e.AUDIT_REMARK).HasColumnName("AUDIT_REMARK");
+        });
+
     }
 }
