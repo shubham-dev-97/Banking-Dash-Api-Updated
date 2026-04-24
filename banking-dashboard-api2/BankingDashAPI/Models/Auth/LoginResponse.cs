@@ -22,6 +22,11 @@
             public int? BranchID { get; set; }
             public int? RegionID { get; set; }
             public string Department { get; set; } = string.Empty;
-        }
+
+            public string? PasswordHash { get; set; }
+
+            public bool IsActive { get; set; }
+
+    }
     
 }

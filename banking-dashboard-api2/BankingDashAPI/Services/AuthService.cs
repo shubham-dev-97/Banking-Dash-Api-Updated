@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace BankingDashAPI.Services
@@ -32,7 +33,7 @@ namespace BankingDashAPI.Services
 
                 if (user == null)
                 {
-                    await LogLoginAttempt(null, request.UserLoginID, "FAILED", "User not found");
+                    _logger.LogWarning("User not found: {UserLoginID}", request.UserLoginID);
                     return new LoginResponse
                     {
                         Success = false,
@@ -40,13 +41,26 @@ namespace BankingDashAPI.Services
                     };
                 }
 
-                // TODO: Implement proper password verification
-                // For now, we'll accept any password (temporary)
-                bool isValidPassword = true;
+                if (!user.IsActive)
+                {
+                    _logger.LogWarning("Inactive user login attempt: {UserLoginID}", request.UserLoginID);
+                    return new LoginResponse
+                    {
+                        Success = false,
+                        Message = "Account is inactive. Please contact administrator."
+                    };
+                }
+
+
+                // Debug logging
+                _logger.LogInformation("Stored PasswordHash: {Hash}", user.PasswordHash);
+
+                // Verify password
+                bool isValidPassword = VerifyPassword(request.Password, user.PasswordHash);
+                _logger.LogInformation("Password verification result: {IsValid}", isValidPassword);
 
                 if (!isValidPassword)
                 {
-                    await LogLoginAttempt(user.UserID, request.UserLoginID, "FAILED", "Invalid password");
                     return new LoginResponse
                     {
                         Success = false,
@@ -54,20 +68,17 @@ namespace BankingDashAPI.Services
                     };
                 }
 
-                await UpdateLastLoginDate(user.UserID);
                 var token = GenerateJwtToken(user);
-
-                await LogLoginAttempt(user.UserID, request.UserLoginID, "SUCCESS", null);
 
                 return new LoginResponse
                 {
                     Success = true,
                     Message = "Login successful",
                     Token = token,
-                    Expiration = DateTime.UtcNow.AddMinutes(
-                        _configuration.GetValue<double>("Jwt:DurationInMinutes", 60)),
+                    Expiration = DateTime.UtcNow.AddMinutes(60),
                     User = user
                 };
+
             }
             catch (Exception ex)
             {
@@ -78,6 +89,36 @@ namespace BankingDashAPI.Services
                     Message = "An error occurred during login"
                 };
             }
+        }
+
+
+        private string HashPassword(string password)
+        {
+            using (var sha256 = SHA256.Create())
+            {
+                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                // Convert to Base64 and remove trailing '=' to match database (24 chars)
+                var hash = Convert.ToBase64String(hashedBytes);
+                var trimmedHash = hash.TrimEnd('=');
+                _logger.LogInformation("Password: {Password}, Hash: {Hash}, Trimmed: {Trimmed}",
+                    password, hash, trimmedHash);
+                return trimmedHash;
+            }
+        }
+
+
+        private bool VerifyPassword(string enteredPassword, string storedHash)
+        {
+            if (string.IsNullOrEmpty(storedHash))
+            {
+                _logger.LogWarning("Stored hash is null or empty");
+                return false;
+            }
+
+            var computedHash = HashPassword(enteredPassword);
+            _logger.LogInformation("Comparing - Computed: {Computed}, Stored: {Stored}", computedHash, storedHash);
+
+            return computedHash == storedHash;
         }
 
         private async Task<UserInfo?> GetUserByLoginIdAsync(string loginId)
