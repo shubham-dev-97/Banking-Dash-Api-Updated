@@ -70,24 +70,28 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReact",
         policy =>
         {
-            //policy.WithOrigins("http://localhost:3000")
-            //      .AllowAnyHeader()
-            //      .AllowAnyMethod();
-
-            policy.WithOrigins("https://witty-water-0fb220f00.2.azurestaticapps.net") // Your Frontend URL
+            policy.WithOrigins("http://localhost:3000")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
+
+            policy.WithOrigins("http://bankapp:80")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+
+            //policy.WithOrigins("https://witty-water-0fb220f00.2.azurestaticapps.net") // Your Frontend URL
+            //      .AllowAnyHeader()
+            //      .AllowAnyMethod();
         });
 });
 
 var app = builder.Build();
 
 // PIPELINE
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+//}
 
 // Disable HTTPS redirect for development
 // app.UseHttpsRedirection();

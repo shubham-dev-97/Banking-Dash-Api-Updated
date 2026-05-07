@@ -34,6 +34,7 @@ namespace BankingDashAPI.Services
                 if (user == null)
                 {
                     _logger.LogWarning("User not found: {UserLoginID}", request.UserLoginID);
+                    await LogLoginAttempt(null, request.UserLoginID, "FAILED", "User not found");
                     return new LoginResponse
                     {
                         Success = false,
@@ -41,16 +42,17 @@ namespace BankingDashAPI.Services
                     };
                 }
 
+                // Check if user is active (now properly reading from database)
                 if (!user.IsActive)
                 {
                     _logger.LogWarning("Inactive user login attempt: {UserLoginID}", request.UserLoginID);
+                    await LogLoginAttempt(user.UserID, request.UserLoginID, "FAILED", "Account inactive");
                     return new LoginResponse
                     {
                         Success = false,
                         Message = "Account is inactive. Please contact administrator."
                     };
                 }
-
 
                 // Debug logging
                 _logger.LogInformation("Stored PasswordHash: {Hash}", user.PasswordHash);
@@ -61,6 +63,7 @@ namespace BankingDashAPI.Services
 
                 if (!isValidPassword)
                 {
+                    await LogLoginAttempt(user.UserID, request.UserLoginID, "FAILED", "Invalid password");
                     return new LoginResponse
                     {
                         Success = false,
@@ -68,7 +71,10 @@ namespace BankingDashAPI.Services
                     };
                 }
 
+                await UpdateLastLoginDate(user.UserID);
                 var token = GenerateJwtToken(user);
+
+                await LogLoginAttempt(user.UserID, request.UserLoginID, "SUCCESS", null);
 
                 return new LoginResponse
                 {
@@ -78,7 +84,6 @@ namespace BankingDashAPI.Services
                     Expiration = DateTime.UtcNow.AddMinutes(60),
                     User = user
                 };
-
             }
             catch (Exception ex)
             {
@@ -90,7 +95,6 @@ namespace BankingDashAPI.Services
                 };
             }
         }
-
 
         private string HashPassword(string password)
         {
@@ -105,7 +109,6 @@ namespace BankingDashAPI.Services
                 return trimmedHash;
             }
         }
-
 
         private bool VerifyPassword(string enteredPassword, string storedHash)
         {
@@ -128,10 +131,10 @@ namespace BankingDashAPI.Services
                 var query = @"
                     SELECT u.UserID, u.UserLoginID, u.UserName, u.EmailID, 
                            u.RoleID, r.RoleName, u.BranchID, u.RegionID, u.Department,
-                           u.PasswordHash
+                           u.PasswordHash, u.IsActive
                     FROM User_Master u
                     LEFT JOIN Role_Master r ON u.RoleID = r.RoleID
-                    WHERE u.UserLoginID = @LoginId AND u.IsActive = 1";
+                    WHERE u.UserLoginID = @LoginId";
 
                 using (var connection = new SqlConnection(_connectionString))
                 using (var command = new SqlCommand(query, connection))
@@ -153,7 +156,9 @@ namespace BankingDashAPI.Services
                                 RoleName = reader.GetString(reader.GetOrdinal("RoleName")),
                                 BranchID = reader.IsDBNull(reader.GetOrdinal("BranchID")) ? null : reader.GetInt32(reader.GetOrdinal("BranchID")),
                                 RegionID = reader.IsDBNull(reader.GetOrdinal("RegionID")) ? null : reader.GetInt32(reader.GetOrdinal("RegionID")),
-                                Department = reader.GetString(reader.GetOrdinal("Department"))
+                                Department = reader.GetString(reader.GetOrdinal("Department")),
+                                PasswordHash = reader.IsDBNull(reader.GetOrdinal("PasswordHash")) ? null : reader.GetString(reader.GetOrdinal("PasswordHash")),
+                                IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
                             };
                         }
                     }
@@ -221,9 +226,9 @@ namespace BankingDashAPI.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
                 new Claim(ClaimTypes.Name, user.UserLoginID),
-                new Claim(ClaimTypes.Email, user.EmailID),
-                new Claim(ClaimTypes.Role, user.RoleName),
-                new Claim("Department", user.Department),
+                new Claim(ClaimTypes.Email, user.EmailID ?? ""),
+                new Claim(ClaimTypes.Role, user.RoleName ?? "User"),
+                new Claim("Department", user.Department ?? ""),
                 new Claim("BranchID", user.BranchID?.ToString() ?? ""),
                 new Claim("RegionID", user.RegionID?.ToString() ?? "")
             };
