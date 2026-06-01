@@ -17,6 +17,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IAuthService, AuthService>(); // Only need this once
+builder.Services.AddScoped<IBranchPerformanceService, BranchPerformanceService>();
+builder.Services.AddScoped<IBankKPIService, BankKPIService>();
 
 
 // JWT Authentication
@@ -70,14 +72,14 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowReact",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
+            policy.WithOrigins(
+                    "http://localhost:3000",
+                    "http://localhost:90"
+                )
                   .AllowAnyHeader()
                   .AllowAnyMethod();
 
-            policy.WithOrigins("http://bankapp:80")
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-
+           
             //policy.WithOrigins("https://witty-water-0fb220f00.2.azurestaticapps.net") // Your Frontend URL
             //      .AllowAnyHeader()
             //      .AllowAnyMethod();

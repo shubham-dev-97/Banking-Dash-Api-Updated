@@ -1,6 +1,8 @@
 ﻿using BankingDashAPI.Models.Entities;
 using BankingDashAPI.Models.Entities.Admin;
 using Microsoft.EntityFrameworkCore;
+using static BankingDashAPI.Models.Entities.BankKPIDashboard;
+using static BankingDashAPI.Models.Entities.BranchPerformanceDashboard;
 
 namespace BankingDashAPI.Data;
 
@@ -54,6 +56,23 @@ public class AppDbContext : DbContext
 
 
     public DbSet<RbiDepositAuditDump> RbiDepositAuditDumps { get; set; }
+
+
+    public DbSet<BranchPerformanceSummary> BranchPerformanceSummaries { get; set; }
+    public DbSet<BranchPerformanceGrid> BranchPerformanceGrids { get; set; }
+    public DbSet<RegionSummary> RegionSummaries { get; set; }
+    public DbSet<TopBranch> TopBranches { get; set; }
+
+
+    public DbSet<BankKPISummary> BankKPISummaries { get; set; }
+    public DbSet<CEOYearlySummary> CEOYearlySummaries { get; set; }
+    public DbSet<RegionKPISummary> RegionKPISummaries { get; set; }
+    public DbSet<BranchPerformanceItem> BranchPerformanceItems { get; set; }
+    public DbSet<BranchDetailGrid> BranchDetailGrids { get; set; }
+    public DbSet<BranchMapData> BranchMapDatas { get; set; }
+    public DbSet<KPIYearlyTrend> KPIYearlyTrends { get; set; }
+    public DbSet<ActualVsProjection> ActualVsProjections { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         
@@ -525,5 +544,221 @@ public class AppDbContext : DbContext
             entity.Property(e => e.AUDIT_REMARK).HasColumnName("AUDIT_REMARK");
         });
 
+
+
+
+
+        // Configure Branch Performance Dashboard Entities (Keyless)
+        modelBuilder.Entity<BranchPerformanceSummary>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.TOTAL_BRANCHES).HasColumnName("TOTAL_BRANCHES");
+            entity.Property(e => e.TOTAL_DAILY_RECOVERY_TARGET).HasColumnName("TOTAL_DAILY_RECOVERY_TARGET");
+            entity.Property(e => e.TOTAL_DAILY_RECOVERY_ACHIEVED).HasColumnName("TOTAL_DAILY_RECOVERY_ACHIEVED");
+            entity.Property(e => e.DAILY_RECOVERY_PERCENT).HasColumnName("DAILY_RECOVERY_PERCENT");
+            entity.Property(e => e.TOTAL_CASA_TARGET).HasColumnName("TOTAL_CASA_TARGET");
+            entity.Property(e => e.TOTAL_CASA_ACHIEVED).HasColumnName("TOTAL_CASA_ACHIEVED");
+            entity.Property(e => e.CASA_PERCENT).HasColumnName("CASA_PERCENT");
+            entity.Property(e => e.TOTAL_TERM_DEPOSIT_TARGET).HasColumnName("TOTAL_TERM_DEPOSIT_TARGET");
+            entity.Property(e => e.TOTAL_TERM_DEPOSIT_ACHIEVED).HasColumnName("TOTAL_TERM_DEPOSIT_ACHIEVED");
+            entity.Property(e => e.TERM_DEPOSIT_PERCENT).HasColumnName("TERM_DEPOSIT_PERCENT");
+            entity.Property(e => e.TOTAL_NEW_CUSTOMERS).HasColumnName("TOTAL_NEW_CUSTOMERS");
+            entity.Property(e => e.TOTAL_MOBILE_BANKING_CUSTOMERS).HasColumnName("TOTAL_MOBILE_BANKING_CUSTOMERS");
+            entity.Property(e => e.AVG_NPA_PERCENT).HasColumnName("AVG_NPA_PERCENT");
+            entity.Property(e => e.AVG_OVERALL_ACHIEVEMENT).HasColumnName("AVG_OVERALL_ACHIEVEMENT");
+            entity.Property(e => e.LAST_UPDATED).HasColumnName("LAST_UPDATED");
+        });
+
+        modelBuilder.Entity<BranchPerformanceGrid>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.BRANCH_RANK).HasColumnName("BRANCH_RANK");
+            entity.Property(e => e.PBRCODE).HasColumnName("PBRCODE");
+            entity.Property(e => e.BRANCH_NAME).HasColumnName("BRANCH_NAME");
+            entity.Property(e => e.BRANCH_MANAGER).HasColumnName("BRANCH_MANAGER");
+            entity.Property(e => e.DAILY_RECOVERY_TARGET).HasColumnName("DAILY_RECOVERY_TARGET");
+            entity.Property(e => e.DAILY_RECOVERY_ACHIEVED).HasColumnName("DAILY_RECOVERY_ACHIEVED");
+            entity.Property(e => e.DAILY_RECOVERY_PERCENT).HasColumnName("DAILY_RECOVERY_PERCENT");
+            entity.Property(e => e.CASA_TARGET_CR).HasColumnName("CASA_TARGET_CR");
+            entity.Property(e => e.CASA_ACHIEVED_CR).HasColumnName("CASA_ACHIEVED_CR");
+            entity.Property(e => e.CASA_PERCENT).HasColumnName("CASA_PERCENT");
+            entity.Property(e => e.TERM_DEPOSIT_TARGET_CR).HasColumnName("TERM_DEPOSIT_TARGET_CR");
+            entity.Property(e => e.TERM_DEPOSIT_ACHIEVED_CR).HasColumnName("TERM_DEPOSIT_ACHIEVED_CR");
+            entity.Property(e => e.TERM_DEPOSIT_PERCENT).HasColumnName("TERM_DEPOSIT_PERCENT");
+            entity.Property(e => e.NEW_CUSTOMERS).HasColumnName("NEW_CUSTOMERS");
+            entity.Property(e => e.MOBILE_BANKING_CUSTOMERS).HasColumnName("MOBILE_BANKING_CUSTOMERS");
+            entity.Property(e => e.NPA_PERCENT).HasColumnName("NPA_PERCENT");
+            entity.Property(e => e.OVERALL_ACHIEVEMENT_PERCENT).HasColumnName("OVERALL_ACHIEVEMENT_PERCENT");
+            entity.Property(e => e.PERFORMANCE_STATUS).HasColumnName("PERFORMANCE_STATUS");
+            entity.Property(e => e.STATUS_COLOR).HasColumnName("STATUS_COLOR");
+        });
+
+        modelBuilder.Entity<RegionSummary>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.REGION_NAME).HasColumnName("REGION_NAME");
+            entity.Property(e => e.TOTAL_BRANCHES).HasColumnName("TOTAL_BRANCHES");
+            entity.Property(e => e.TOTAL_DEPOSIT).HasColumnName("TOTAL_DEPOSIT");
+            entity.Property(e => e.TOTAL_LOAN).HasColumnName("TOTAL_LOAN");
+            entity.Property(e => e.TOTAL_RECOVERY).HasColumnName("TOTAL_RECOVERY");
+            entity.Property(e => e.AVG_PERFORMANCE_PERCENT).HasColumnName("AVG_PERFORMANCE_PERCENT");
+        });
+
+        modelBuilder.Entity<TopBranch>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.BRANCH_RANK).HasColumnName("BRANCH_RANK");
+            entity.Property(e => e.PBRCODE).HasColumnName("PBRCODE");
+            entity.Property(e => e.BRANCH_NAME).HasColumnName("BRANCH_NAME");
+            entity.Property(e => e.BRANCH_MANAGER).HasColumnName("BRANCH_MANAGER");
+            entity.Property(e => e.OVERALL_ACHIEVEMENT_PERCENT).HasColumnName("OVERALL_ACHIEVEMENT_PERCENT");
+            entity.Property(e => e.PERFORMANCE_STATUS).HasColumnName("PERFORMANCE_STATUS");
+            entity.Property(e => e.NPA_PERCENT).HasColumnName("NPA_PERCENT");
+        });
+
+
+
+        modelBuilder.Entity<BankKPISummary>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.TOTAL_BRANCHES).HasColumnName("TOTAL_BRANCHES");
+            entity.Property(e => e.TOTAL_CUSTOMERS).HasColumnName("TOTAL_CUSTOMERS");
+            entity.Property(e => e.ACTIVE_CUSTOMERS).HasColumnName("ACTIVE_CUSTOMERS");
+            entity.Property(e => e.NEW_CUSTOMERS).HasColumnName("NEW_CUSTOMERS");
+            entity.Property(e => e.TOTAL_DEPOSIT_CR).HasColumnName("TOTAL_DEPOSIT_CR");
+            entity.Property(e => e.TOTAL_LOAN_CR).HasColumnName("TOTAL_LOAN_CR");
+            entity.Property(e => e.TOTAL_RECOVERY_CR).HasColumnName("TOTAL_RECOVERY_CR");
+            entity.Property(e => e.AVG_GROSS_NPA).HasColumnName("AVG_GROSS_NPA");
+            entity.Property(e => e.AVG_NET_NPA).HasColumnName("AVG_NET_NPA");
+            entity.Property(e => e.AVG_CASA_RATIO).HasColumnName("AVG_CASA_RATIO");
+            entity.Property(e => e.DIGITAL_PERCENT).HasColumnName("DIGITAL_PERCENT");
+            entity.Property(e => e.AVG_PERFORMANCE).HasColumnName("AVG_PERFORMANCE");
+            entity.Property(e => e.TOTAL_UPI_TRANSACTION_CR).HasColumnName("TOTAL_UPI_TRANSACTION_CR");
+        });
+
+        // CEO Yearly Summary
+        modelBuilder.Entity<CEOYearlySummary>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.FIN_YEAR).HasColumnName("FIN_YEAR");
+            entity.Property(e => e.TOTAL_BRANCHES).HasColumnName("TOTAL_BRANCHES");
+            entity.Property(e => e.TOTAL_DEPOSIT_CR).HasColumnName("TOTAL_DEPOSIT_CR");
+            entity.Property(e => e.TOTAL_LOAN_CR).HasColumnName("TOTAL_LOAN_CR");
+            entity.Property(e => e.TOTAL_RECOVERY_CR).HasColumnName("TOTAL_RECOVERY_CR");
+            entity.Property(e => e.AVG_GROSS_NPA).HasColumnName("AVG_GROSS_NPA");
+            entity.Property(e => e.AVG_NET_NPA).HasColumnName("AVG_NET_NPA");
+            entity.Property(e => e.DIGITAL_PERCENT).HasColumnName("DIGITAL_PERCENT");
+            entity.Property(e => e.AVG_PERFORMANCE).HasColumnName("AVG_PERFORMANCE");
+        });
+
+        //  Region Summary
+        modelBuilder.Entity<RegionKPISummary>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.REGION_NAME).HasColumnName("REGION_NAME");
+            entity.Property(e => e.TOTAL_BRANCHES).HasColumnName("TOTAL_BRANCHES");
+            entity.Property(e => e.TOTAL_DEPOSIT_CR).HasColumnName("TOTAL_DEPOSIT_CR");
+            entity.Property(e => e.TOTAL_LOAN_CR).HasColumnName("TOTAL_LOAN_CR");
+            entity.Property(e => e.TOTAL_RECOVERY_CR).HasColumnName("TOTAL_RECOVERY_CR");
+            entity.Property(e => e.AVG_NPA).HasColumnName("AVG_NPA");
+            entity.Property(e => e.DIGITAL_PERCENT).HasColumnName("DIGITAL_PERCENT");
+            entity.Property(e => e.AVG_PERFORMANCE).HasColumnName("AVG_PERFORMANCE");
+        });
+
+        //  Branch Performance Items (Top/Bottom Branches)
+        modelBuilder.Entity<BranchPerformanceItem>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.PBRCODE).HasColumnName("PBRCODE");
+            entity.Property(e => e.BRANCH_NAME).HasColumnName("BRANCH_NAME");
+            entity.Property(e => e.REGION_NAME).HasColumnName("REGION_NAME");
+            entity.Property(e => e.TOTAL_DEPOSIT_ACHIEVED_CR).HasColumnName("TOTAL_DEPOSIT_ACHIEVED_CR");
+            entity.Property(e => e.TOTAL_LOAN_ACHIEVED_CR).HasColumnName("TOTAL_LOAN_ACHIEVED_CR");
+            entity.Property(e => e.RECOVERY_ACHIEVED_CR).HasColumnName("RECOVERY_ACHIEVED_CR");
+            entity.Property(e => e.GROSS_NPA_PERCENT).HasColumnName("GROSS_NPA_PERCENT");
+            entity.Property(e => e.DIGITAL_TRANSACTION_PERCENT).HasColumnName("DIGITAL_TRANSACTION_PERCENT");
+            entity.Property(e => e.OVERALL_ACHIEVEMENT_PERCENT).HasColumnName("OVERALL_ACHIEVEMENT_PERCENT");
+            entity.Property(e => e.PERFORMANCE_STATUS).HasColumnName("PERFORMANCE_STATUS");
+        });
+
+        // Branch Detail Grid
+        modelBuilder.Entity<BranchDetailGrid>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.PBRCODE).HasColumnName("PBRCODE");
+            entity.Property(e => e.BRANCH_NAME).HasColumnName("BRANCH_NAME");
+            entity.Property(e => e.REGION_NAME).HasColumnName("REGION_NAME");
+            entity.Property(e => e.TOTAL_CUSTOMERS).HasColumnName("TOTAL_CUSTOMERS");
+            entity.Property(e => e.ACTIVE_CUSTOMERS).HasColumnName("ACTIVE_CUSTOMERS");
+            entity.Property(e => e.NEW_CUSTOMERS).HasColumnName("NEW_CUSTOMERS");
+            entity.Property(e => e.STAFF_COUNT).HasColumnName("STAFF_COUNT");
+            entity.Property(e => e.TOTAL_DEPOSIT_TARGET_CR).HasColumnName("TOTAL_DEPOSIT_TARGET_CR");
+            entity.Property(e => e.TOTAL_DEPOSIT_ACHIEVED_CR).HasColumnName("TOTAL_DEPOSIT_ACHIEVED_CR");
+            entity.Property(e => e.CASA_TARGET_CR).HasColumnName("CASA_TARGET_CR");
+            entity.Property(e => e.CASA_ACHIEVED_CR).HasColumnName("CASA_ACHIEVED_CR");
+            entity.Property(e => e.TERM_DEPOSIT_TARGET_CR).HasColumnName("TERM_DEPOSIT_TARGET_CR");
+            entity.Property(e => e.TERM_DEPOSIT_ACHIEVED_CR).HasColumnName("TERM_DEPOSIT_ACHIEVED_CR");
+            entity.Property(e => e.CASA_RATIO_PERCENT).HasColumnName("CASA_RATIO_PERCENT");
+            entity.Property(e => e.TOTAL_LOAN_TARGET_CR).HasColumnName("TOTAL_LOAN_TARGET_CR");
+            entity.Property(e => e.TOTAL_LOAN_ACHIEVED_CR).HasColumnName("TOTAL_LOAN_ACHIEVED_CR");
+            entity.Property(e => e.MSME_LOAN_CR).HasColumnName("MSME_LOAN_CR");
+            entity.Property(e => e.GOLD_LOAN_CR).HasColumnName("GOLD_LOAN_CR");
+            entity.Property(e => e.RECOVERY_TARGET_CR).HasColumnName("RECOVERY_TARGET_CR");
+            entity.Property(e => e.RECOVERY_ACHIEVED_CR).HasColumnName("RECOVERY_ACHIEVED_CR");
+            entity.Property(e => e.GROSS_NPA_PERCENT).HasColumnName("GROSS_NPA_PERCENT");
+            entity.Property(e => e.NET_NPA_PERCENT).HasColumnName("NET_NPA_PERCENT");
+            entity.Property(e => e.MOBILE_BANKING_CUSTOMERS).HasColumnName("MOBILE_BANKING_CUSTOMERS");
+            entity.Property(e => e.INTERNET_BANKING_CUSTOMERS).HasColumnName("INTERNET_BANKING_CUSTOMERS");
+            entity.Property(e => e.UPI_TRANSACTION_CR).HasColumnName("UPI_TRANSACTION_CR");
+            entity.Property(e => e.DIGITAL_TRANSACTION_PERCENT).HasColumnName("DIGITAL_TRANSACTION_PERCENT");
+            entity.Property(e => e.OVERALL_ACHIEVEMENT_PERCENT).HasColumnName("OVERALL_ACHIEVEMENT_PERCENT");
+            entity.Property(e => e.PERFORMANCE_STATUS).HasColumnName("PERFORMANCE_STATUS");
+            entity.Property(e => e.BRANCH_RANK).HasColumnName("BRANCH_RANK");
+        });
+
+        //  Map Dataset
+        modelBuilder.Entity<BranchMapData>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.PBRCODE).HasColumnName("PBRCODE");
+            entity.Property(e => e.BRANCH_NAME).HasColumnName("BRANCH_NAME");
+            entity.Property(e => e.REGION_NAME).HasColumnName("REGION_NAME");
+            entity.Property(e => e.LATITUDE).HasColumnName("LATITUDE");
+            entity.Property(e => e.LONGITUDE).HasColumnName("LONGITUDE");
+            entity.Property(e => e.TOTAL_DEPOSIT_ACHIEVED_CR).HasColumnName("TOTAL_DEPOSIT_ACHIEVED_CR");
+            entity.Property(e => e.TOTAL_LOAN_ACHIEVED_CR).HasColumnName("TOTAL_LOAN_ACHIEVED_CR");
+            entity.Property(e => e.RECOVERY_ACHIEVED_CR).HasColumnName("RECOVERY_ACHIEVED_CR");
+            entity.Property(e => e.GROSS_NPA_PERCENT).HasColumnName("GROSS_NPA_PERCENT");
+            entity.Property(e => e.DIGITAL_TRANSACTION_PERCENT).HasColumnName("DIGITAL_TRANSACTION_PERCENT");
+            entity.Property(e => e.OVERALL_ACHIEVEMENT_PERCENT).HasColumnName("OVERALL_ACHIEVEMENT_PERCENT");
+            entity.Property(e => e.PERFORMANCE_STATUS).HasColumnName("PERFORMANCE_STATUS");
+            entity.Property(e => e.GOOGLE_MAP_LOCATION).HasColumnName("GOOGLE_MAP_LOCATION");
+        });
+
+        //  Trend Analysis
+        modelBuilder.Entity<KPIYearlyTrend>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.FIN_YEAR).HasColumnName("FIN_YEAR");
+            entity.Property(e => e.TOTAL_DEPOSIT_CR).HasColumnName("TOTAL_DEPOSIT_CR");
+            entity.Property(e => e.TOTAL_LOAN_CR).HasColumnName("TOTAL_LOAN_CR");
+            entity.Property(e => e.TOTAL_RECOVERY_CR).HasColumnName("TOTAL_RECOVERY_CR");
+            entity.Property(e => e.AVG_NPA).HasColumnName("AVG_NPA");
+            entity.Property(e => e.DIGITAL_PERCENT).HasColumnName("DIGITAL_PERCENT");
+            entity.Property(e => e.AVG_PERFORMANCE).HasColumnName("AVG_PERFORMANCE");
+        });
+
+        //  Actual vs Projection
+        modelBuilder.Entity<ActualVsProjection>(entity =>
+        {
+            entity.HasNoKey();
+            entity.Property(e => e.YEAR_TYPE).HasColumnName("YEAR_TYPE");
+            entity.Property(e => e.TOTAL_DEPOSIT_CR).HasColumnName("TOTAL_DEPOSIT_CR");
+            entity.Property(e => e.TOTAL_LOAN_CR).HasColumnName("TOTAL_LOAN_CR");
+            entity.Property(e => e.TOTAL_RECOVERY_CR).HasColumnName("TOTAL_RECOVERY_CR");
+            entity.Property(e => e.AVG_NPA).HasColumnName("AVG_NPA");
+            entity.Property(e => e.DIGITAL_PERCENT).HasColumnName("DIGITAL_PERCENT");
+            entity.Property(e => e.AVG_PERFORMANCE).HasColumnName("AVG_PERFORMANCE");
+        });
     }
 }
