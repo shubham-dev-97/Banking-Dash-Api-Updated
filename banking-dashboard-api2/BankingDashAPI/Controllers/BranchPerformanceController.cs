@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using BankingDashAPI.Services.Interfaces;
 using static BankingDashAPI.Models.Entities.BranchPerformanceDashboard;
 

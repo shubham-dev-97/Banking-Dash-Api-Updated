@@ -1,4 +1,4 @@
-﻿using BankingDashAPI.Models.Auth;
+using BankingDashAPI.Models.Auth;
 using BankingDashAPI.Services.Interfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
@@ -110,7 +110,7 @@ namespace BankingDashAPI.Services
             }
         }
 
-        private bool VerifyPassword(string enteredPassword, string storedHash)
+        private bool VerifyPassword(string enteredPassword, string? storedHash)
         {
             if (string.IsNullOrEmpty(storedHash))
             {

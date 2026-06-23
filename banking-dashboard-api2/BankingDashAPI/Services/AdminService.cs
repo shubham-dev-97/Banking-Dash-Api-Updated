@@ -1,4 +1,4 @@
-﻿using BankingDashAPI.Data;
+using BankingDashAPI.Data;
 using BankingDashAPI.Models.Entities.Admin;
 using BankingDashAPI.Services.Interfaces;
 using Microsoft.Data.SqlClient;
@@ -152,13 +152,13 @@ namespace BankingDashAPI.Services
             }
         }
 
-        public User GetUserById(int userId)
+        public User? GetUserById(int userId)
         {
             try
             {
                 _logger.LogInformation("Getting user by ID: {UserId}", userId);
 
-                User user = null;
+                User? user = null;
                 var query = @"
                     SELECT u.*, r.RoleName 
                     FROM User_Master u
@@ -392,13 +392,13 @@ namespace BankingDashAPI.Services
             }
         }
 
-        public Role GetRoleById(int roleId)
+        public Role? GetRoleById(int roleId)
         {
             try
             {
                 _logger.LogInformation("Getting role by ID: {RoleId}", roleId);
 
-                Role role = null;
+                Role? role = null;
                 var query = @"
                     SELECT r.*, COUNT(u.UserID) as UserCount
                     FROM Role_Master r
@@ -570,13 +570,13 @@ namespace BankingDashAPI.Services
             }
         }
 
-        public Page GetPageById(int pageId)
+        public Page? GetPageById(int pageId)
         {
             try
             {
                 _logger.LogInformation("Getting page by ID: {PageId}", pageId);
 
-                Page page = null;
+                Page? page = null;
                 var query = "SELECT * FROM Dashboard_Page_Master WHERE PageID = @PageId";
 
                 using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
