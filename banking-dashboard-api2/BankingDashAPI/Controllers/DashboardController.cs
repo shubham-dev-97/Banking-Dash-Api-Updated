@@ -263,17 +263,32 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("loan-trend")]
-    public async Task<IActionResult> GetLoanTrend([FromQuery] DateTime asOnDate)
+    public async Task<IActionResult> GetLoanTrend([FromQuery] DateTime asOnDate, CancellationToken cancellationToken)
     {
+        if (asOnDate == default || asOnDate.Year < 1900 || asOnDate.Year > 2100)
+        {
+            return BadRequest(new { message = "Invalid asOnDate parameter. Date must be provided in valid YYYY-MM-DD format." });
+        }
+
         try
         {
-            var data = await _service.GetLoanTrendLast6MonthsAsync(asOnDate);
+            var data = await _service.GetLoanTrendLast6MonthsAsync(asOnDate, cancellationToken);
             return Ok(data);
+        }
+        catch (SqlException sqlEx) when (sqlEx.Number == -2 || sqlEx.Message.Contains("Timeout", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning(sqlEx, "Database query timed out for loan-trend endpoint for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+            return StatusCode(StatusCodes.Status504GatewayTimeout, new { message = "Database request timed out. Please try again later." });
+        }
+        catch (OperationCanceledException)
+        {
+            _logger.LogInformation("Loan trend request was cancelled by client for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+            return StatusCode(499, new { message = "Request was cancelled." });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in GetLoanTrend");
-            return StatusCode(500, new { error = ex.Message });
+            _logger.LogError(ex, "Unexpected error in GetLoanTrend for date: {Date}", asOnDate.ToString("yyyy-MM-dd"));
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An unexpected server error occurred." });
         }
     }
 

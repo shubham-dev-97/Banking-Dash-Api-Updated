@@ -13,12 +13,13 @@ public class DashboardService : IDashboardService
 {
     private readonly AppDbContext _context;
     private readonly ILogger<DashboardService> _logger;
+    private readonly IConfiguration _configuration;
 
-
-    public DashboardService(AppDbContext context, ILogger<DashboardService> logger)
+    public DashboardService(AppDbContext context, ILogger<DashboardService> logger, IConfiguration configuration)
     {
         _context = context;
         _logger = logger;
+        _configuration = configuration;
     }
 
     public async Task<List<CustomerCountByCategory>> GetCustomerCountByCategory(CustomerCountFilter filter)
@@ -593,51 +594,45 @@ public class DashboardService : IDashboardService
         }
     }
 
-    public async Task<List<LoanTrend>> GetLoanTrendLast6MonthsAsync(DateTime asOnDate)
+    public async Task<List<LoanTrend>> GetLoanTrendLast6MonthsAsync(DateTime asOnDate, CancellationToken cancellationToken = default)
     {
-        try
+        _logger.LogInformation("Fetching loan trend for last 6 months from date: {Date}",
+            asOnDate.ToString("yyyy-MM-dd"));
+
+        var trends = new List<LoanTrend>();
+        int timeoutSeconds = _configuration.GetValue<int>("DatabaseCommandTimeoutSeconds", 300);
+
+        using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
         {
-            _logger.LogInformation("Fetching loan trend for last 6 months from date: {Date}",
-                asOnDate.ToString("yyyy-MM-dd"));
-
-            var trends = new List<LoanTrend>();
-
-            using (var connection = new SqlConnection(_context.Database.GetConnectionString()))
+            using (var command = new SqlCommand("sp_GetLoanTrendLast6Months", connection))
             {
-                using (var command = new SqlCommand("sp_GetLoanTrendLast6Months", connection))
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandTimeout = timeoutSeconds;
+                command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
+
+                await connection.OpenAsync(cancellationToken);
+
+                using (var reader = await command.ExecuteReaderAsync(cancellationToken))
                 {
-                    command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@AsOnDate", asOnDate.Date);
-
-                    await connection.OpenAsync();
-
-                    using (var reader = await command.ExecuteReaderAsync())
+                    while (await reader.ReadAsync(cancellationToken))
                     {
-                        while (await reader.ReadAsync())
+                        trends.Add(new LoanTrend
                         {
-                            trends.Add(new LoanTrend
-                            {
-                                Year = reader.GetInt32(0),
-                                Month = reader.GetInt32(1),
-                                MonthName = reader.GetString(2),
-                                TotalOutstanding = reader.GetDecimal(3),
-                                TotalSanctioned = reader.GetDecimal(4),
-                                AccountCount = reader.GetInt32(5),
-                                AverageLoanSize = reader.GetDecimal(6)
-                            });
-                        }
+                            Year = reader.GetInt32(0),
+                            Month = reader.GetInt32(1),
+                            MonthName = reader.GetString(2),
+                            TotalOutstanding = reader.GetDecimal(3),
+                            TotalSanctioned = reader.GetDecimal(4),
+                            AccountCount = reader.GetInt32(5),
+                            AverageLoanSize = reader.GetDecimal(6)
+                        });
                     }
                 }
             }
+        }
 
-            _logger.LogInformation("Retrieved {Count} months of loan trend data", trends.Count);
-            return trends;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error fetching loan trend data");
-            return new List<LoanTrend>();
-        }
+        _logger.LogInformation("Retrieved {Count} months of loan trend data", trends.Count);
+        return trends;
     }
 
 

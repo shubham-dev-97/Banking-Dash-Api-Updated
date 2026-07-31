@@ -1,5 +1,6 @@
 using BankingDashAPI.Models.Auth;
 using BankingDashAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
@@ -15,6 +16,7 @@ namespace BankingDashAPI.Services
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
         private readonly string _connectionString;
+        private static readonly PasswordHasher<string> _passwordHasher = new PasswordHasher<string>();
 
         public AuthService(IConfiguration configuration, ILogger<AuthService> logger)
         {
@@ -54,15 +56,12 @@ namespace BankingDashAPI.Services
                     };
                 }
 
-                // Debug logging
-                _logger.LogInformation("Stored PasswordHash: {Hash}", user.PasswordHash);
-
-                // Verify password
+                // Verify password securely using dual-hash verifier
                 bool isValidPassword = VerifyPassword(request.Password, user.PasswordHash);
-                _logger.LogInformation("Password verification result: {IsValid}", isValidPassword);
 
                 if (!isValidPassword)
                 {
+                    _logger.LogWarning("Failed login attempt for user: {UserLoginID}", request.UserLoginID);
                     await LogLoginAttempt(user.UserID, request.UserLoginID, "FAILED", "Invalid password");
                     return new LoginResponse
                     {
@@ -96,32 +95,51 @@ namespace BankingDashAPI.Services
             }
         }
 
-        private string HashPassword(string password)
-        {
-            using (var sha256 = SHA256.Create())
-            {
-                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                // Convert to Base64 and remove trailing '=' to match database (24 chars)
-                var hash = Convert.ToBase64String(hashedBytes);
-                var trimmedHash = hash.TrimEnd('=');
-                _logger.LogInformation("Password: {Password}, Hash: {Hash}, Trimmed: {Trimmed}",
-                    password, hash, trimmedHash);
-                return trimmedHash;
-            }
-        }
-
         private bool VerifyPassword(string enteredPassword, string? storedHash)
         {
-            if (string.IsNullOrEmpty(storedHash))
+            if (string.IsNullOrEmpty(enteredPassword) || string.IsNullOrWhiteSpace(storedHash))
             {
-                _logger.LogWarning("Stored hash is null or empty");
                 return false;
             }
 
-            var computedHash = HashPassword(enteredPassword);
-            _logger.LogInformation("Comparing - Computed: {Computed}, Stored: {Stored}", computedHash, storedHash);
+            // 1. Try ASP.NET Core Identity PasswordHasher verification first safely
+            try
+            {
+                var identityResult = _passwordHasher.VerifyHashedPassword("User", storedHash, enteredPassword);
+                if (identityResult == PasswordVerificationResult.Success || identityResult == PasswordVerificationResult.SuccessRehashNeeded)
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // Fallback safely if storedHash is not a valid ASP.NET Core Identity hash format
+            }
 
-            return computedHash == storedHash;
+            // 2. Try Legacy SHA-256 Base64 hash verification using constant-time comparison
+            try
+            {
+                byte[] computedHashBytes = SHA256.HashData(Encoding.UTF8.GetBytes(enteredPassword));
+
+                string normalizedStored = storedHash.Trim();
+                int mod4 = normalizedStored.Length % 4;
+                if (mod4 > 0)
+                {
+                    normalizedStored += new string('=', 4 - mod4);
+                }
+
+                byte[] storedHashBytes = Convert.FromBase64String(normalizedStored);
+                if (storedHashBytes.Length == computedHashBytes.Length && CryptographicOperations.FixedTimeEquals(computedHashBytes, storedHashBytes))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                // Return false safely for null, malformed, or unsupported hash formats without throwing HTTP 500
+            }
+
+            return false;
         }
 
         private async Task<UserInfo?> GetUserByLoginIdAsync(string loginId)
